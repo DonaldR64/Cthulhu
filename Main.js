@@ -56,7 +56,16 @@ const AC = (() => {
 
     }
 
-
+    //Retrieve Values from Character Sheet Attributes
+    const Attribute = (character,attributename) => {
+        //Retrieve Values from Character Sheet Attributes
+        let attributeobj = findObjs({type:'attribute',characterid: character.id, name: attributename})[0]
+        let attributevalue = "";
+        if (attributeobj) {
+            attributevalue = attributeobj.get('current');
+        }
+        return attributevalue;
+    };
 
 
 
@@ -227,16 +236,42 @@ const AC = (() => {
         let defenderChar = getObj("character", defenderToken.get("represents"));
         if (!defenderChar) {return};
 
-        //check to see not self as target
+        if (attackerToken === defenderToken) {
+            sendChat("","Targetted Self");
+            return;
+        }
 
         let weapon = Weapons[weaponName];
         if (!weapon) {return};
 
-        let statName;
-        if (weapon.type === "Ranged") {statName = }
+        let stat;
+        if (weapon.type === "Ranged") {
+            stat = parseInt(Attribute(attackerChar,"coordination"));
+        }
+        //Melee
+        //Mental
+
+        //attack
+        //focus
+
+
+        
+
+
+        let roll = randomInteger(20);
 
 
 
+
+
+        SetupCard(attackerChar.get("name"),weaponName,"PCs");
+        outputCard.body.push(weapon.type + " Attack");
+        outputCard.body.push("Target: " + defenderChar.get("name"));
+        outputCard.body.push("Roll: " + roll);
+        outputCard.body.push("Stat: " + stat);
+        let results = (roll <= stat) ? "Success":"Failure";
+        outputCard.body.push(results);
+        PrintCard();
 
 
 

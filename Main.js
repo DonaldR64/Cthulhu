@@ -135,7 +135,7 @@ const AC = (() => {
             return (Math.abs(this.q) + Math.abs(this.r) + Math.abs(this.s)) / 2;
         }
         distance(b) {
-            return (this.subtract(b).len() + 1);
+            return this.subtract(b).len();
         }
         round() {
             var qi = Math.round(this.q);
@@ -408,7 +408,11 @@ const AC = (() => {
     }
 
 
-
+    const Ranges = {
+        Close: 30,
+        Medium: 60,
+        Long: 100,
+    }
 
 
 
@@ -459,7 +463,8 @@ const AC = (() => {
         //build Page Info and flesh out Hex Info
         pageInfo.page = getObj('page', Campaign().get("playerpageid"));
         pageInfo.name = pageInfo.page.get("name");
-        pageInfo.scale = pageInfo.page.get("snapping_increment");
+        pageInfo.scale = pageInfo.page.get("scale_number");
+        pageInfo.scaleUnits = pageInfo.page.get("scale_units");
         pageInfo.width = pageInfo.page.get("width") * 70;
         pageInfo.height = pageInfo.page.get("height") * 70;
 
@@ -680,6 +685,18 @@ const AC = (() => {
 
         //change difficulty based on range, prone, special tokenmarkers etc
 
+        let distance = TokenDistance(attacker,defender);
+        let weaponRange = Ranges[weapon.range];
+        if (distance > weaponRange) {
+            difficulty++;
+            if (weapon.range === "Close") {
+                if (distance > Ranges["Medium"]) {difficulty++};
+                if (distance > Ranges["Long"]) {difficulty++};
+            } else if (weapon.range === "Medium") {
+                if (distance > Ranges["Long"]) {difficulty++};
+            }
+        }
+
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);
             attackRolls.push(roll);
@@ -691,7 +708,7 @@ const AC = (() => {
         let bonusMomentum = successes - difficulty || 0;
 
         SetupCard(attacker.name,weaponName,"PCs");
-        outputCard.body.push(weapon.type + " Attack");
+        outputCard.body.push("Difficulty: " + difficulty);
         outputCard.body.push("Target: " + defender.name);
         outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
         if (successes < difficulty) {
@@ -742,16 +759,19 @@ const AC = (() => {
         let attacker = CharacterArray[attackerID];
         let defender = CharacterArray[defenderID];
 
-        let distance = attacker.hex.distance(defender.hex);
+        
 
-        sendChat("","Distance: " + distance + " Hexes");
+        sendChat("","Distance: " + TokenDistance(attacker,defender) + " " + pageInfo.scaleUnits);
 
 
 
     }
 
 
-
+    const TokenDistance = (charA,charB) => {
+        let dist = charA.hex.distance(charB.hex) * pageInfo.scale;
+        return dist;
+    }
 
 
 
@@ -769,6 +789,8 @@ const AC = (() => {
                 log(state.AC);
                 log("Char Array");
                 log(CharacterArray)
+                log("Page Info");
+                log(pageInfo);
                 break;
             case '!ClearState':
                 ClearState();

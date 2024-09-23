@@ -5,6 +5,33 @@ const AC = (() => {
 
     let outputCard = {title: "",subtitle: "",player: "",body: [],buttons: [],};
 
+    const pageInfo = {name: "",page: "",gridType: "",scale: 0,width: 0,height: 0};
+    const rowLabels = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL","MM","NN","OO","PP","QQ","RR","SS","TT","UU","VV","WW","XX","YY","ZZ","AAA","BBB","CCC","DDD","EEE","FFF","GGG","HHH","III","JJJ","KKK","LLL","MMM","NNN","OOO","PPP","QQQ","RRR","SSS","TTT","UUU","VVV","WWW","XXX","YYY","ZZZ"];
+
+
+    let hexMap = {}; 
+    let xSpacing = 75.1985619844599;
+    let ySpacing = 66.9658278242677;
+
+    const DIRECTIONS = ["Northeast","East","Southeast","Southwest","West","Northwest"];
+
+
+    const simpleObj = (o) => {
+        let p = JSON.parse(JSON.stringify(o));
+        return p;
+    };
+
+    const getCleanImgSrc = (imgsrc) => {
+        let parts = imgsrc.match(/(.*\/images\/.*)(thumb|med|original|max)([^?]*)(\?[^?]+)?$/);
+        if(parts) {
+            return parts[1]+'thumb'+parts[3]+(parts[4]?parts[4]:`?${Math.round(Math.random()*9999999)}`);
+        }
+        return;
+    };
+
+
+
+
     const ButtonInfo = (phrase,action) => {
         let info = {
             phrase: phrase,
@@ -34,7 +61,295 @@ const AC = (() => {
 
     }
 
+    const HexInfo = {
+        size: {
+            x: 75.1985619844599/Math.sqrt(3),
+            y: 66.9658278242677 * 2/3,
+        },
+        pixelStart: {
+            x: 37.5992809922301,
+            y: 43.8658278242683,
+        },
+        //xSpacing: 75.1985619844599,
+        halfX: 75.1985619844599/2,
+        //ySpacing: 66.9658278242677,
+        width: 75.1985619844599,
+        height: 89.2877704323569,
+        directions: {},
+    };
 
+    const M = {
+            f0: Math.sqrt(3),
+            f1: Math.sqrt(3)/2,
+            f2: 0,
+            f3: 3/2,
+            b0: Math.sqrt(3)/3,
+            b1: -1/3,
+            b2: 0,
+            b3: 2/3,
+    };
+
+    class Point {
+        constructor(x,y) {
+            this.x = x;
+            this.y = y;
+        }
+    };
+
+
+    class Hex {
+        constructor(q,r,s) {
+            this.q = q;
+            this.r =r;
+            this.s = s;
+        }
+
+        add(b) {
+            return new Hex(this.q + b.q, this.r + b.r, this.s + b.s);
+        }
+        subtract(b) {
+            return new Hex(this.q - b.q, this.r - b.r, this.s - b.s);
+        }
+        static direction(direction) {
+            return HexInfo.directions[direction];
+        }
+        neighbour(direction) {
+            //returns a hex (with q,r,s) for neighbour, specify direction eg. hex.neighbour("NE")
+            return this.add(HexInfo.directions[direction]);
+        }
+        neighbours() {
+            //all 6 neighbours
+            let results = [];
+            for (let i=0;i<DIRECTIONS.length;i++) {
+                results.push(this.neighbour(DIRECTIONS[i]));
+            }
+            return results;
+        }
+
+
+
+        len() {
+            return (Math.abs(this.q) + Math.abs(this.r) + Math.abs(this.s)) / 2;
+        }
+        distance(b) {
+            return this.subtract(b).len();
+        }
+        round() {
+            var qi = Math.round(this.q);
+            var ri = Math.round(this.r);
+            var si = Math.round(this.s);
+            var q_diff = Math.abs(qi - this.q);
+            var r_diff = Math.abs(ri - this.r);
+            var s_diff = Math.abs(si - this.s);
+            if (q_diff > r_diff && q_diff > s_diff) {
+                qi = -ri - si;
+            }
+            else if (r_diff > s_diff) {
+                ri = -qi - si;
+            }
+            else {
+                si = -qi - ri;
+            }
+            return new Hex(qi, ri, si);
+        }
+        lerp(b, t) {
+            return new Hex(this.q * (1.0 - t) + b.q * t, this.r * (1.0 - t) + b.r * t, this.s * (1.0 - t) + b.s * t);
+        }
+        linedraw(b) {
+            //returns array of hexes between this hex and hex 'b'
+            var N = this.distance(b);
+            var a_nudge = new Hex(this.q + 1e-06, this.r + 1e-06, this.s - 2e-06);
+            var b_nudge = new Hex(b.q + 1e-06, b.r + 1e-06, b.s - 2e-06);
+            var results = [];
+            var step = 1.0 / Math.max(N, 1);
+            for (var i = 0; i < N; i++) {
+                results.push(a_nudge.lerp(b_nudge, step * i).round());
+            }
+            return results;
+        }
+        label() {
+            //translate hex qrs to Roll20 map label
+            let doubled = DoubledCoord.fromCube(this);
+            let label = rowLabels[doubled.row] + (doubled.col + 1).toString();
+            return label;
+        }
+
+        radius(rad) {
+            //returns array of hexes in radius rad
+            //Not only is x + y + z = 0, but the absolute values of x, y and z are equal to twice the radius of the ring
+            let results = [];
+            let h;
+            for (let i = 0;i <= rad; i++) {
+                for (let j=-i;j<=i;j++) {
+                    for (let k=-i;k<=i;k++) {
+                        for (let l=-i;l<=i;l++) {
+                            if((Math.abs(j) + Math.abs(k) + Math.abs(l) === i*2) && (j + k + l === 0)) {
+                                h = new Hex(j,k,l);
+                                results.push(this.add(h));
+                            }
+                        }
+                    }
+                }
+            }
+            return results;
+        }
+        angle(b) {
+            //angle between 2 hexes
+            let origin = hexToPoint(this);
+            let destination = hexToPoint(b);
+
+            let x = Math.round(origin.x - destination.x);
+            let y = Math.round(origin.y - destination.y);
+            let phi = Math.atan2(y,x);
+            phi = phi * (180/Math.PI);
+            phi = Math.round(phi);
+            phi -= 90;
+            phi = Angle(phi);
+            return phi;
+        }        
+    };
+
+    class DoubledCoord {
+        constructor(col, row) {
+            this.col = col;
+            this.row = row;
+        }
+        static fromCube(h) {
+            var col = 2 * h.q + h.r;
+            var row = h.r;
+            return new DoubledCoord(col, row);//note will need to use rowLabels for the row, and add one to column to translate from 0
+        }
+        toCube() {
+            var q = (this.col - this.row) / 2; //as r = row
+            var r = this.row;
+            var s = -q - r;
+            return new Hex(q, r, s);
+        }
+    };
+
+
+
+    const pointToHex = (point) => {
+        let x = (point.x - HexInfo.pixelStart.x)/HexInfo.size.x;
+        let y = (point.y - HexInfo.pixelStart.y)/HexInfo.size.y;
+        let q = M.b0 * x + M.b1 * y;
+        let r = M.b2 * x + M.b3 * y;
+        let s = -q-r;
+        let hex = new Hex(q,r,s);
+        hex = hex.round();
+        return hex;
+    }
+
+    const hexToPoint = (hex) => {
+        let q = hex.q;
+        let r = hex.r;
+        let x = (M.f0 * q + M.f1 * r) * HexInfo.size.x;
+        x += HexInfo.pixelStart.x;
+        let y = (M.f2 * r + M.f3 * r) * HexInfo.size.y;
+        y += HexInfo.pixelStart.y;
+        let point = new Point(x,y);
+        return point;
+    }
+
+
+    const getAbsoluteControlPt = (controlArray, centre, w, h, rot, scaleX, scaleY) => {
+        let len = controlArray.length;
+        let point = new Point(controlArray[len-2], controlArray[len-1]);
+        //translate relative x,y to actual x,y 
+        point.x = scaleX*point.x + centre.x - (scaleX * w/2);
+        point.y = scaleY*point.y + centre.y - (scaleY * h/2);
+        point = RotatePoint(centre.x, centre.y, rot, point);
+        return point;
+    }
+
+    const XHEX = (pts) => {
+        //makes a small group of points for checking around centre
+        let points = pts;
+        points.push(new Point(pts[0].x - 20,pts[0].y - 20));
+        points.push(new Point(pts[0].x + 20,pts[0].y - 20));
+        points.push(new Point(pts[0].x + 20,pts[0].y + 20));
+        points.push(new Point(pts[0].x - 20,pts[0].y + 20));
+        return points;
+    }
+
+    const Angle = (theta) => {
+        while (theta < 0) {
+            theta += 360;
+        }
+        while (theta > 360) {
+            theta -= 360;
+        }
+        return theta
+    }   
+
+    const RotatePoint = (cX,cY,angle, p) => {
+        //cx, cy = coordinates of the centre of rotation
+        //angle = clockwise rotation angle
+        //p = point object
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
+        // translate point back to origin:
+        p.x -= cX;
+        p.y -= cY;
+        // rotate point
+        let newX = p.x * c - p.y * s;
+        let newY = p.x * s + p.y * c;
+        // translate point back:
+        p.x = Math.round(newX + cX);
+        p.y = Math.round(newY + cY);
+        return p;
+    }
+
+
+    const BuildMap = () => {
+        let startTime = Date.now();
+        hexMap = {};
+        //builds a hex map, assumes Hex(V) page setting
+        let halfToggleX = HexInfo.halfX;
+        let rowLabelNum = 0;
+        let columnLabel = 1;
+        //let xSpacing = 75.1985619844599;
+        //let ySpacing = 66.9658278242677;
+        let startX = 37.5992809922301;
+        let startY = 43.8658278242683;
+
+        for (let j = startY; j <= pageInfo.height;j+=ySpacing){
+            let rowLabel = rowLabels[rowLabelNum];
+            for (let i = startX;i<= pageInfo.width;i+=xSpacing) {
+                let point = new Point(i,j);     
+                let label = (rowLabel + columnLabel).toString(); //id of hex
+                let hexInfo = {
+                    id: label,
+                    centre: point,
+                    terrain: [],
+                    tokenIDs: [],
+                };
+                hexMap[label] = hexInfo;
+                columnLabel += 2;
+            }
+            startX += halfToggleX;
+            halfToggleX = -halfToggleX;
+            rowLabelNum += 1;
+            columnLabel = (columnLabel % 2 === 0) ? 1:2; //swaps odd and even
+        }
+
+
+        let elapsed = Date.now()-startTime;
+        log("Hex Map Built in " + elapsed/1000 + " seconds");
+        //add tokens to hex map, rebuild Team/Unit Arrays
+        //TA();
+    }
+
+
+
+
+
+
+
+
+
+
+//maybe move to seperate script ala Battlegroup
     const Weapons = {
         "High Standard HDM Pistol": {
             type: "Ranged",
@@ -56,6 +371,14 @@ const AC = (() => {
 
     }
 
+
+
+
+
+
+
+
+
     //Retrieve Values from Character Sheet Attributes
     const Attribute = (character,attributename) => {
         //Retrieve Values from Character Sheet Attributes
@@ -68,6 +391,23 @@ const AC = (() => {
     };
 
 
+    const LoadPage = () => {
+        //build Page Info and flesh out Hex Info
+        pageInfo.page = getObj('page', Campaign().get("playerpageid"));
+        pageInfo.name = pageInfo.page.get("name");
+        pageInfo.scale = pageInfo.page.get("snapping_increment");
+        pageInfo.width = pageInfo.page.get("width") * 70;
+        pageInfo.height = pageInfo.page.get("height") * 70;
+
+        HexInfo.directions = {
+            "Northeast": new Hex(1, -1, 0),
+            "East": new Hex(1, 0, -1),
+            "Southeast": new Hex(0, 1, -1),
+            "Southwest": new Hex(-1, 1, 0),
+            "West": new Hex(-1, 0, 1),
+            "Northwest": new Hex(0, -1, 1),
+        }
+    }
 
 
 
@@ -335,6 +675,8 @@ const AC = (() => {
 
     on('ready', () => {
         log("==> Achtung! Cthulhu Version: " + version + " <==")
+        LoadPage();
+        BuildMap();
         sendChat("","API Ready")
         registerEventHandlers();
     });

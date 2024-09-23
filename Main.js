@@ -135,7 +135,7 @@ const AC = (() => {
             return (Math.abs(this.q) + Math.abs(this.r) + Math.abs(this.s)) / 2;
         }
         distance(b) {
-            return this.subtract(b).len();
+            return (this.subtract(b).len() + 1);
         }
         round() {
             var qi = Math.round(this.q);
@@ -241,6 +241,7 @@ const AC = (() => {
             this.location = location;
             this.hex = hex;
             this.hexLabel = hexLabel;
+            this.token = token;
 
         }
 
@@ -630,20 +631,16 @@ const AC = (() => {
         //can calculate final results
 
         let Tag = msg.content.split(";");
-        let attackerTokenID = Tag[1];
-        let defenderTokenID = Tag[2];
+        let attackerID = Tag[1];
+        let defenderID = Tag[2];
         let weaponName = Tag[3]; 
         let bonusDice = parseInt(Tag[4]) || 0; //0 - 5?
 
-        let attackerToken = findObjs({_type:"graphic", id: attackerTokenID})[0];
-        let attackerChar = getObj("character", attackerToken.get("represents"));
-        if (!attackerChar) {return};
+        let attacker = CharacterArray[attackerID];
+        let defender = CharacterArray[defenderID];
+        if (!attacker || !defender) {return};
 
-        let defenderToken = findObjs({_type:"graphic", id: defenderTokenID})[0];
-        let defenderChar = getObj("character", defenderToken.get("represents"));
-        if (!defenderChar) {return};
-
-        if (attackerToken === defenderToken) {
+        if (attacker === defender) {
             sendChat("","Targetted Self");
             return;
         }
@@ -723,7 +720,21 @@ const AC = (() => {
     }
 
 
+    const Distance = (msg) => {
+        let Tag = msg.content.split(";");
+        let attackerID = Tag[1];
+        let defenderID = Tag[2];
 
+        let attacker = CharacterArray[attackerID];
+        let defender = CharacterArray[defenderID];
+
+        let distance = attacker.hex.distance(defender.hex);
+
+        sendChat("","Distance: " + distance + " Hexes");
+
+
+
+    }
 
 
 
@@ -753,6 +764,9 @@ const AC = (() => {
                 break;
             case '!TokenInfo':
                 TokenInfo(msg);
+                break;
+            case '!Distance':
+                Distance(msg);
                 break;
         }
     };

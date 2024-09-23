@@ -690,16 +690,16 @@ const AC = (() => {
 
         let bonusMomentum = successes - difficulty || 0;
 
-        SetupCard(attackerChar.get("name"),weaponName,"PCs");
+        SetupCard(attacker.name,weaponName,"PCs");
         outputCard.body.push(weapon.type + " Attack");
-        outputCard.body.push("Target: " + defenderChar.get("name"));
+        outputCard.body.push("Target: " + defender.name);
         outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
         if (successes < difficulty) {
             outputCard.body.push("Miss");
         } else {
             outputCard.body.push("Hit");
             if (bonusMomentum > 0) {
-                outputCard.body.push("Momentum: " + bonusMomentum);
+                outputCard.body.push("Bonus Momentum: " + bonusMomentum);
             }
         }
         if (complications > 0) {

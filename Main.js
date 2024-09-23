@@ -696,6 +696,8 @@ const AC = (() => {
                 if (distance > Ranges["Long"]) {difficulty++};
             }
         }
+//Melee Range???
+
 
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);

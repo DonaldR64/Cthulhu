@@ -243,12 +243,12 @@ const AC = (() => {
             this.hexLabel = hexLabel;
             this.token = token;
             this.brawn = parseInt(attributeArray.brawn);
-            this.coordination = attributeArray.coordination;
-            this.agility = attributeArray.agility;
-            this.insight = attributeArray.insight;
-            this.reason = attributeArray.reason;
-            this.will = attributeArray.will;
-
+            this.coordination = parseInt(attributeArray.coordination);
+            this.agility = parseInt(attributeArray.agility);
+            this.insight = parseInt(attributeArray.insight);
+            this.reason = parseInt(attributeArray.reason);
+            this.will = parseInt(attributeArray.will);
+            this.fighting = parseInt(attributeArray.skill_fighting);
 
         }
 
@@ -656,14 +656,21 @@ const AC = (() => {
         if (!weapon) {return};
 
         let stat;
+        let skill;
+        let focus;
         if (weapon.type === "Ranged") {
-            stat = parseInt(Attribute(attackerChar,"coordination
+            stat = attacker.coordination;
+            skill = attacker.fighting;
+
         }
         //Melee
         //Mental
 
         //attack
         //focus
+
+
+        let target = stat + skill;
 
         let diceNum = 2 + bonusDice;
         let attackRolls = [];
@@ -676,7 +683,7 @@ const AC = (() => {
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);
             attackRolls.push(roll);
-            if (roll <= stat) {successes += 1};
+            if (roll <= target) {successes += 1};
             if (roll === 1) {successes += 1};
             if (roll === 20) {complications += 1};
         }
@@ -686,7 +693,7 @@ const AC = (() => {
         SetupCard(attackerChar.get("name"),weaponName,"PCs");
         outputCard.body.push(weapon.type + " Attack");
         outputCard.body.push("Target: " + defenderChar.get("name"));
-        outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + stat + "+");
+        outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
         if (successes < difficulty) {
             outputCard.body.push("Miss");
         } else {

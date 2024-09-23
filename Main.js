@@ -213,7 +213,27 @@ const AC = (() => {
         //roll damage 
         //can calculate final results
 
+        let Tag = msg.content.split(";");
+        let attackerTokenID = Tag[1];
+        let defenderTokenID = Tag[2];
+        let weaponName = Tag[3]; 
+        let bonusDice = Tag[4]; //0 - 5?
 
+        let attackerToken = findObjs({_type:"graphic", id: attackerTokenID})[0];
+        let attackerChar = getObj("character", attackerToken.get("represents"));
+        if (!attackerChar) {return};
+
+        let defenderToken = findObjs({_type:"graphic", id: defenderTokenID})[0];
+        let defenderChar = getObj("character", defenderToken.get("represents"));
+        if (!defenderChar) {return};
+
+        //check to see not self as target
+
+        let weapon = Weapons[weaponName];
+        if (!weapon) {return};
+
+        let statName;
+        if (weapon.type === "Ranged") {statName = }
 
 
 

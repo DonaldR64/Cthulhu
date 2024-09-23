@@ -257,8 +257,7 @@ const AC = (() => {
         let diceNum = 2 + bonusDice;
         let attackRolls = [];
 
-
-
+        sendChat("player|" + msg.playerid,"/roll " + diceNum + "d20", null, {use3d: true});
 
         SetupCard(attackerChar.get("name"),weaponName,"PCs");
         outputCard.body.push(weapon.type + " Attack");

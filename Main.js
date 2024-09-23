@@ -15,7 +15,7 @@ const AC = (() => {
 
     const DIRECTIONS = ["Northeast","East","Southeast","Southwest","West","Northwest"];
 
-    const TokenArray = {};
+    let CharacterArray = {}; //indexed on the tokenID for ease
 
 
     const simpleObj = (o) => {
@@ -42,15 +42,16 @@ const AC = (() => {
         outputCard.buttons.push(info);
     }
 
-    const Outputs = {
-        "PCs": {
+    const Factions = {
+//later amend to include Black Sun, Heer, etc
+        "PC": {
             "backgroundColour": "#0A2065",
             "titlefont": "Merriweather",
             "fontColour": "#FFFFFF",
             "borderColour": "#BC2D2F",
             "borderStyle": "5px groove",
         },
-        "NPCs": {
+        "NPC": {
             "backgroundColour": "#0A2065",
             "titlefont": "Merriweather",
             "fontColour": "#FFFFFF",
@@ -230,16 +231,13 @@ const AC = (() => {
     };
 
     class Character {
-        constructor(token) {
-            let char = getObj("character", token.get("represents"));
-            if (!char) {return}
+        constructor(char,token) {
             let attributeArray = AttributeArray(char.id);
             let location = new Point(token.get("left"),token.get("top"));
             let hex = pointToHex(location);
             let hexLabel = hex.label();
-
-            this.name = attributeArray.name;
-            this.type = attributeArray.type;
+            this.name = token.get("name");
+            this.faction = attributeArray.faction || "PC";
             this.location = location;
             this.hex = hex;
             this.hexLabel = hexLabel;
@@ -383,7 +381,11 @@ const AC = (() => {
         let c = tokens.length;
         let s = (1===c?'':'s');     
         tokens.forEach((token) => {
-            let character = new Character(token);
+            let char = getObj("character", token.get("represents"));
+            if (char) {
+                let character = new Character(char,token);
+                CharacterArray[token.id] = character;
+            }
         });
 
 
@@ -463,6 +465,18 @@ const AC = (() => {
         }
     }
 
+    const AttributeArray = (characterID) => {
+        let aa = {}
+        let attributes = findObjs({_type:'attribute',_characterid: characterID});
+        for (let j=0;j<attributes.length;j++) {
+            let name = attributes[j].get("name")
+            let current = attributes[j].get("current")   
+            if (!current || current === "") {current = " "} 
+            aa[name] = current;
+
+        }
+        return aa;
+    };
 
 
 
@@ -473,12 +487,10 @@ const AC = (() => {
 
 
 
-
-
-    const SetupCard = (title,subtitle,player) => {
+    const SetupCard = (title,subtitle,faction) => {
         outputCard.title = title;
         outputCard.subtitle = subtitle;
-        outputCard.player = player;
+        outputCard.faction = faction;
         outputCard.body = [];
         outputCard.buttons = [];
         outputCard.inline = [];
@@ -514,34 +526,35 @@ const AC = (() => {
             output += "/desc ";
         }
 
-        if (!outputCard.player || !Outputs[outputCard.player]) {
-            outputCard.player = "Neutral";
+        if (!outputCard.faction || !Factions[outputCard.faction]) {
+            outputCard.faction = "NPC";
         }
 
         //start of card
-        output += `<div style="display: table; border: ` + Outputs[outputCard.player].borderStyle + " " + Outputs[outputCard.player].borderColour + `; `;
+        output += `<div style="display: table; border: ` + Factions[outputCard.faction].borderStyle + " " + Factions[outputCard.faction].borderColour + `; `;
         output += `background-color: #EEEEEE; width: 100%; text-align: center; `;
         output += `border-radius: 1px; border-collapse: separate; box-shadow: 5px 3px 3px 0px #aaa;;`;
         output += `"><div style="display: table-header-group; `;
-        output += `background-color: ` + Outputs[outputCard.player].backgroundColour + `; `;
-        //output += `background-image: url(` + Outputs[outputCard.player].image + `), url(` + Outputs[outputCard.player].image + `); `;
+        output += `background-color: ` + Factions[outputCard.faction].backgroundColour + `; `;
+        //output += `background-image: url(` + Factions[outputCard.faction].image + `), url(` + Factions[outputCard.faction].image + `); `;
         output += `background-position: left,right; background-repeat: no-repeat, no-repeat; background-size: contain, contain; align: center,center; `;
         output += `border-bottom: 2px solid #444444; "><div style="display: table-row;"><div style="display: table-cell; padding: 2px 2px; text-align: center;"><span style="`;
-        output += `font-family: ` + Outputs[outputCard.player].titlefont + `; `;
+        output += `font-family: ` + Factions[outputCard.faction].titlefont + `; `;
         output += `font-style: normal; `;
 
         let titlefontsize = "1.4em";
+
         if (outputCard.title.length > 12) {
             titlefontsize = "1em";
         }
 
         output += `font-size: ` + titlefontsize + `; `;
         output += `line-height: 1.2em; font-weight: strong; `;
-        output += `color: ` + Outputs[outputCard.player].fontColour + `; `;
+        output += `color: ` + Factions[outputCard.faction].fontColour + `; `;
         output += `text-shadow: none; `;
         output += `">`+ outputCard.title + `</span><br /><span style="`;
         output += `font-family: Arial; font-variant: normal; font-size: 13px; font-style: normal; font-weight: bold; `;
-        output += `color: ` +  Outputs[outputCard.player].fontColour + `; `;
+        output += `color: ` +  Factions[outputCard.faction].fontColour + `; `;
         output += `">` + outputCard.subtitle + `</span></div></div></div>`;
 
         //body of card
@@ -566,8 +579,8 @@ const AC = (() => {
                 let substring = line.substring(index1,index2);
                 let player = substring.replace(/%%/g,"");
                 line = line.replace(substring,"");
-                lineBack = Outputs[player].backgroundColour;
-                fontColour = Outputs[player].fontColour;
+                lineBack = Factions[player].backgroundColour;
+                fontColour = Factions[player].fontColour;
             }    
             out += `<div style="display: table-row; background: ` + lineBack + `;; `;
             out += `"><div style="display: table-cell; padding: 0px 0px; font-family: Arial; font-style: normal; font-weight: normal; font-size: 14px; `;
@@ -587,9 +600,9 @@ const AC = (() => {
                 out += `"><div style="display: table-cell; padding: 0px 0px; font-family: Arial; font-style: normal; font-weight: normal; font-size: 14px; `;
                 out += `"><span style="line-height: normal; color: #000000; `;
                 out += `"> <div style='text-align: center; display:block;'>`;
-                out += `<a style ="background-color: ` + Outputs[outputCard.player].backgroundColour + `; padding: 5px;`
-                out += `color: ` + Outputs[outputCard.player].fontColour + `; text-align: center; vertical-align: middle; border-radius: 5px;`;
-                out += `border-color: ` + Outputs[outputCard.player].borderColour + `; font-family: Tahoma; font-size: x-small; `;
+                out += `<a style ="background-color: ` + Factions[outputCard.faction].backgroundColour + `; padding: 5px;`
+                out += `color: ` + Factions[outputCard.faction].fontColour + `; text-align: center; vertical-align: middle; border-radius: 5px;`;
+                out += `border-color: ` + Factions[outputCard.faction].borderColour + `; font-family: Tahoma; font-size: x-small; `;
                 out += `"href = "` + info.action + `">` + info.phrase + `</a></div></span></div></div>`;
                 output += out;
             }
@@ -704,8 +717,8 @@ const AC = (() => {
             sendChat("","Not in Array Yet");
             return;
         };
-        SetupCard(character.name,"Info",character.type);
-        outputCard.body.push("Hex: " + character.hex);
+        SetupCard(character.name,"Info",character.faction);
+        outputCard.body.push("Hex: " + character.hexLabel);
         PrintCard();
     }
 
@@ -729,6 +742,8 @@ const AC = (() => {
             case '!Dump':
                 log("STATE");
                 log(state.AC);
+                log("Char Array");
+                log(CharacterArray)
                 break;
             case '!ClearState':
                 ClearState();

@@ -13,27 +13,21 @@ const AC = (() => {
         outputCard.buttons.push(info);
     }
 
-    const Players = {
-        "UK": {
-            "image": "https://s3.amazonaws.com/files.d20.io/images/330506939/YtTgDTM3q7p8m0fJ4-E13A/thumb.png?1677713592",
+    const Outputs = {
+        "PCs": {
             "backgroundColour": "#0A2065",
             "titlefont": "Merriweather",
             "fontColour": "#FFFFFF",
             "borderColour": "#BC2D2F",
             "borderStyle": "5px groove",
-            "dice": "UK",
         },
-        "USA": {
-            "image": "https://s3.amazonaws.com/files.d20.io/images/327595663/Nwyhbv22KB4_xvwYEbL3PQ/thumb.png?1676165491",
-            "backgroundColour": "#006400",
-            "titlefont": "Arial",
-            "fontColour": "#000000",
-            "borderColour": "#006400",
-            "borderStyle": "5px double",
-            "dice": "USA",
-        },        
-
-
+        "NPCs": {
+            "backgroundColour": "#0A2065",
+            "titlefont": "Merriweather",
+            "fontColour": "#FFFFFF",
+            "borderColour": "#BC2D2F",
+            "borderStyle": "5px groove",
+        },
 
 
 
@@ -116,20 +110,20 @@ const AC = (() => {
             output += "/desc ";
         }
 
-        if (!outputCard.player || !Players[outputCard.player]) {
+        if (!outputCard.player || !Outputs[outputCard.player]) {
             outputCard.player = "Neutral";
         }
 
         //start of card
-        output += `<div style="display: table; border: ` + Players[outputCard.player].borderStyle + " " + Players[outputCard.player].borderColour + `; `;
+        output += `<div style="display: table; border: ` + Outputs[outputCard.player].borderStyle + " " + Outputs[outputCard.player].borderColour + `; `;
         output += `background-color: #EEEEEE; width: 100%; text-align: center; `;
         output += `border-radius: 1px; border-collapse: separate; box-shadow: 5px 3px 3px 0px #aaa;;`;
         output += `"><div style="display: table-header-group; `;
-        output += `background-color: ` + Players[outputCard.player].backgroundColour + `; `;
-        output += `background-image: url(` + Players[outputCard.player].image + `), url(` + Players[outputCard.player].image + `); `;
+        output += `background-color: ` + Outputs[outputCard.player].backgroundColour + `; `;
+        //output += `background-image: url(` + Outputs[outputCard.player].image + `), url(` + Outputs[outputCard.player].image + `); `;
         output += `background-position: left,right; background-repeat: no-repeat, no-repeat; background-size: contain, contain; align: center,center; `;
         output += `border-bottom: 2px solid #444444; "><div style="display: table-row;"><div style="display: table-cell; padding: 2px 2px; text-align: center;"><span style="`;
-        output += `font-family: ` + Players[outputCard.player].titlefont + `; `;
+        output += `font-family: ` + Outputs[outputCard.player].titlefont + `; `;
         output += `font-style: normal; `;
 
         let titlefontsize = "1.4em";
@@ -139,11 +133,11 @@ const AC = (() => {
 
         output += `font-size: ` + titlefontsize + `; `;
         output += `line-height: 1.2em; font-weight: strong; `;
-        output += `color: ` + Players[outputCard.player].fontColour + `; `;
+        output += `color: ` + Outputs[outputCard.player].fontColour + `; `;
         output += `text-shadow: none; `;
         output += `">`+ outputCard.title + `</span><br /><span style="`;
         output += `font-family: Arial; font-variant: normal; font-size: 13px; font-style: normal; font-weight: bold; `;
-        output += `color: ` +  Players[outputCard.player].fontColour + `; `;
+        output += `color: ` +  Outputs[outputCard.player].fontColour + `; `;
         output += `">` + outputCard.subtitle + `</span></div></div></div>`;
 
         //body of card
@@ -168,8 +162,8 @@ const AC = (() => {
                 let substring = line.substring(index1,index2);
                 let player = substring.replace(/%%/g,"");
                 line = line.replace(substring,"");
-                lineBack = Players[player].backgroundColour;
-                fontColour = Players[player].fontColour;
+                lineBack = Outputs[player].backgroundColour;
+                fontColour = Outputs[player].fontColour;
             }    
             out += `<div style="display: table-row; background: ` + lineBack + `;; `;
             out += `"><div style="display: table-cell; padding: 0px 0px; font-family: Arial; font-style: normal; font-weight: normal; font-size: 14px; `;
@@ -189,9 +183,9 @@ const AC = (() => {
                 out += `"><div style="display: table-cell; padding: 0px 0px; font-family: Arial; font-style: normal; font-weight: normal; font-size: 14px; `;
                 out += `"><span style="line-height: normal; color: #000000; `;
                 out += `"> <div style='text-align: center; display:block;'>`;
-                out += `<a style ="background-color: ` + Players[outputCard.player].backgroundColour + `; padding: 5px;`
-                out += `color: ` + Players[outputCard.player].fontColour + `; text-align: center; vertical-align: middle; border-radius: 5px;`;
-                out += `border-color: ` + Players[outputCard.player].borderColour + `; font-family: Tahoma; font-size: x-small; `;
+                out += `<a style ="background-color: ` + Outputs[outputCard.player].backgroundColour + `; padding: 5px;`
+                out += `color: ` + Outputs[outputCard.player].fontColour + `; text-align: center; vertical-align: middle; border-radius: 5px;`;
+                out += `border-color: ` + Outputs[outputCard.player].borderColour + `; font-family: Tahoma; font-size: x-small; `;
                 out += `"href = "` + info.action + `">` + info.phrase + `</a></div></span></div></div>`;
                 output += out;
             }
@@ -202,7 +196,24 @@ const AC = (() => {
         outputCard = {title: "",subtitle: "",player: "",body: [],buttons: [],};
     }
 
+    const ClearState = () => {
+        state.AC = {
+            momentum: 0,
+            threat: 0,
+        };
+    }
 
+    const Attack = (msg) => {
+
+
+
+
+
+
+
+
+        
+    }
 
 
 
@@ -226,8 +237,9 @@ const AC = (() => {
             case '!ClearState':
                 ClearState();
                 break;
-
-
+            case '!Attack':
+                Attack(msg);
+                break;
 
                 
         }

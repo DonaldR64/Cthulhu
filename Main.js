@@ -37,6 +37,7 @@ const AC = (() => {
 
     const Weapons = {
         "High Standard HDM Pistol": {
+            type: "Ranged",
             focus: "Handguns",
             range: "Close",
             stress: "3",
@@ -204,6 +205,13 @@ const AC = (() => {
     }
 
     const Attack = (msg) => {
+        //msg will have character info, weapon name, ? target info
+        //also # of extra dice
+        //calculate difficulty -> base 1, +1 if prone, +1 if certain marker (spells?)
+        //roll against approp. stat
+        //note rolls, any extra momentum or complications
+        //roll damage 
+        //can calculate final results
 
 
 
@@ -212,7 +220,7 @@ const AC = (() => {
 
 
 
-        
+
     }
 
 

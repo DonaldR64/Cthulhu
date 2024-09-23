@@ -15,6 +15,8 @@ const AC = (() => {
 
     const DIRECTIONS = ["Northeast","East","Southeast","Southwest","West","Northwest"];
 
+    const TokenArray = {};
+
 
     const simpleObj = (o) => {
         let p = JSON.parse(JSON.stringify(o));
@@ -227,6 +229,32 @@ const AC = (() => {
         }
     };
 
+    class Character {
+        constructor(token) {
+            let char = getObj("character", token.get("represents"));
+            if (!char) {return}
+            let attributeArray = AttributeArray(char.id);
+            let location = new Point(token.get("left"),token.get("top"));
+            let hex = pointToHex(location);
+            let hexLabel = hex.label();
+
+            this.name = attributeArray.name;
+            this.type = attributeArray.type;
+            this.location = location;
+            this.hex = hex;
+            this.hexLabel = hexLabel;
+
+        }
+
+
+
+
+
+
+    }
+
+
+
 
 
     const pointToHex = (point) => {
@@ -337,11 +365,37 @@ const AC = (() => {
         let elapsed = Date.now()-startTime;
         log("Hex Map Built in " + elapsed/1000 + " seconds");
         //add tokens to hex map, rebuild Team/Unit Arrays
-        //TA();
+        BuildArrays();
     }
 
 
+    const BuildArrays = () => {
+        CharacterArray = {};
+        //create an array of all tokens
+        let start = Date.now();
+        let tokens = findObjs({
+            _pageid: Campaign().get("playerpageid"),
+            _type: "graphic",
+            _subtype: "token",
+            layer: "objects",
+        });
 
+        let c = tokens.length;
+        let s = (1===c?'':'s');     
+        tokens.forEach((token) => {
+            let character = new Character(token);
+        });
+
+
+        let elapsed = Date.now()-start;
+        log(`${c} token${s} checked in ${elapsed/1000} seconds - ` + Object.keys(CharacterArray).length + " placed in Character Array");        
+
+
+
+
+
+
+    }
 
 
 
@@ -639,6 +693,25 @@ const AC = (() => {
     }
 
 
+    const TokenInfo = (msg) => {
+        if (!msg.selected) {
+            sendChat("","No Token Selected");
+            return;
+        };
+        let id = msg.selected[0]._id;
+        let character = CharacterArray[id];
+        if (!character) {
+            sendChat("","Not in Array Yet");
+            return;
+        };
+        SetupCard(character.name,"Info",character.type);
+        outputCard.body.push("Hex: " + character.hex);
+        PrintCard();
+    }
+
+
+
+
 
 
 
@@ -663,8 +736,9 @@ const AC = (() => {
             case '!Attack':
                 Attack(msg);
                 break;
-
-                
+            case '!TokenInfo':
+                TokenInfo(msg);
+                break;
         }
     };
 

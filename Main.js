@@ -260,6 +260,8 @@ const AC = (() => {
         let complications = 0;
         let difficulty = 1;
 
+        //change difficulty based on range, prone, special tokenmarkers etc
+
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);
             attackRolls.push(roll);

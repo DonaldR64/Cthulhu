@@ -41,6 +41,39 @@ const AC = (() => {
     }
 
 
+    const Weapons = {
+        "High Standard HDM Pistol": {
+            focus: "Handguns",
+            range: "Close",
+            stress: "3",
+            stresseffect: "",
+            salvo: "Vicious",
+            size: "Minor",
+            qualities: "Close Quarters, Hidden",
+        }
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

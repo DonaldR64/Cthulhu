@@ -256,12 +256,38 @@ const AC = (() => {
 
         let diceNum = 2 + bonusDice;
         let attackRolls = [];
+        let successes = 0;
+        let complications = 0;
+        let difficulty = 1;
 
-        sendChat("player|" + msg.playerid,"/roll " + diceNum + "d20", null, {use3d: true});
+        for (let i=0;i<diceNum;i++) {
+            let roll = randomInteger(20);
+            attackRolls.push(roll);
+            if (roll <= stat) {successes += 1};
+            if (roll === 1) {successes += 1};
+            if (roll === 20) {complications += 1};
+        }
+
+        let bonusMomentum = successes - difficulty || 0;
 
         SetupCard(attackerChar.get("name"),weaponName,"PCs");
         outputCard.body.push(weapon.type + " Attack");
         outputCard.body.push("Target: " + defenderChar.get("name"));
+        outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + stat + "+");
+        if (successes < difficulty) {
+            outputCard.body.push("Miss");
+        } else {
+            outputCard.body.push("Hit");
+            if (bonusMomentum > 0) {
+                outputCard.body.push("Momentum: " + bonusMomentum);
+            }
+        }
+        if (complications > 0) {
+            let s = (complications > 1) ? "s": "";
+            outputCard.body.push(complications + " Complication" + s);
+        }
+//highlight critical successes and complications
+//maybe graphic represenations for d20?
 
         PrintCard();
 

@@ -242,6 +242,13 @@ const AC = (() => {
             this.hex = hex;
             this.hexLabel = hexLabel;
             this.token = token;
+            this.brawn = parseInt(attributeArray.brawn);
+            this.coordination = attributeArray.coordination;
+            this.agility = attributeArray.agility;
+            this.insight = attributeArray.insight;
+            this.reason = attributeArray.reason;
+            this.will = attributeArray.will;
+
 
         }
 
@@ -650,7 +657,7 @@ const AC = (() => {
 
         let stat;
         if (weapon.type === "Ranged") {
-            stat = parseInt(Attribute(attackerChar,"coordination"));
+            stat = parseInt(Attribute(attackerChar,"coordination
         }
         //Melee
         //Mental

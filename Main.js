@@ -226,7 +226,7 @@ const AC = (() => {
         let attackerTokenID = Tag[1];
         let defenderTokenID = Tag[2];
         let weaponName = Tag[3]; 
-        let bonusDice = Tag[4]; //0 - 5?
+        let bonusDice = parseInt(Tag[4]) || 0; //0 - 5?
 
         let attackerToken = findObjs({_type:"graphic", id: attackerTokenID})[0];
         let attackerChar = getObj("character", attackerToken.get("represents"));
@@ -254,12 +254,8 @@ const AC = (() => {
         //attack
         //focus
 
-
-        
-
-
-        let roll = randomInteger(20);
-
+        let diceNum = 2 + bonusDice;
+        let attackRolls = [];
 
 
 
@@ -267,10 +263,7 @@ const AC = (() => {
         SetupCard(attackerChar.get("name"),weaponName,"PCs");
         outputCard.body.push(weapon.type + " Attack");
         outputCard.body.push("Target: " + defenderChar.get("name"));
-        outputCard.body.push("Roll: " + roll);
-        outputCard.body.push("Stat: " + stat);
-        let results = (roll <= stat) ? "Success":"Failure";
-        outputCard.body.push(results);
+
         PrintCard();
 
 

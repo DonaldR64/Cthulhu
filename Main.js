@@ -135,7 +135,7 @@ const AC = (() => {
             return (Math.abs(this.q) + Math.abs(this.r) + Math.abs(this.s)) / 2;
         }
         distance(b) {
-            return this.subtract(b).len();
+            return this.subtract(b).len() + 1;
         }
         round() {
             var qi = Math.round(this.q);
@@ -407,11 +407,11 @@ const AC = (() => {
 
     }
 
-
+//set up as in feet
     const Ranges = {
-        Close: 30,
-        Medium: 60,
-        Long: 100,
+        Close: 50,
+        Medium: 100,
+        Long: 200,
     }
 
 

@@ -258,7 +258,7 @@ const AC = (() => {
             this.reason = parseInt(attributeArray.reason);
             this.will = parseInt(attributeArray.will);
             //skills
-            this.fighting = parseInt(attributeArray.skill_fighting);
+            this.fighting = parseInt(attributeArray.skill_fighting) || 0;
 
 
             //focuses
@@ -692,8 +692,8 @@ const AC = (() => {
         let stat;
         let skill;
         let weaponRange;
-
-        switch(weaponType) {
+log(attacker)
+        switch(weapon.type) {
             case "Melee":
                 statName = "Agility"; //for tooltip
                 skillName = "Fighting";
@@ -702,6 +702,7 @@ const AC = (() => {
                 weaponRange = pageInfo.scale;
                 break;
             case "Ranged":
+                log("Here")
                 statName = "Coordination"; //for tooltip
                 skillName = "Fighting";
                 stat = attacker.coordination;
@@ -715,7 +716,8 @@ const AC = (() => {
                 weaponRange = "";
                 break;
         }    
-
+log(stat)
+log(skill)
         let focus = attacker[weapon.focus] || false;
         let focusTarget = (focus === true) ? skill:1;
 
@@ -740,7 +742,7 @@ const AC = (() => {
         }
 
         //prone
-        if (defender.token.get(sm.prone) === true) {
+        if (defender.token.get(SM.prone) === true) {
             if (distance/pageInfo.scale > 1) {
                 difficulty++;
             } else {
@@ -760,7 +762,7 @@ const AC = (() => {
         }
 
         attackRolls.sort();
-        
+
         let bonusMomentum = successes - difficulty;
         bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
 

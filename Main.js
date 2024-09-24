@@ -31,6 +31,14 @@ const AC = (() => {
         return;
     };
 
+    const SM = {
+        prone: "status_Prone::2006547",
+
+
+
+    }
+
+
 
 
 
@@ -645,6 +653,9 @@ const AC = (() => {
         //roll damage 
         //can calculate final results
 
+        //add in tooltips
+
+
         let Tag = msg.content.split(";");
         let attackerID = Tag[1];
         let defenderID = Tag[2];
@@ -676,7 +687,6 @@ const AC = (() => {
         //attack
         //focus
         let focus = attacker[weapon.focus]
-        log(focus)
      
         let target = stat + skill;
 
@@ -686,8 +696,7 @@ const AC = (() => {
         let complications = 0;
         let difficulty = 1;
 
-        //change difficulty based on range, prone, special tokenmarkers etc
-
+        //change difficulty based on range
         let distance = TokenDistance(attacker,defender);
         let weaponRange = Ranges[weapon.range];
         if (distance > weaponRange) {
@@ -700,6 +709,21 @@ const AC = (() => {
             }
         }
 //Melee Range???
+
+
+        //prone
+        if (defender.token.get(sm.prone) === true) {
+            if (distance/pageInfo.scale > 1) {
+                difficulty++;
+            } else {
+                difficulty--;
+            }
+        }
+        //other mods to difficulty eg. spells
+
+
+
+
 
 
         for (let i=0;i<diceNum;i++) {

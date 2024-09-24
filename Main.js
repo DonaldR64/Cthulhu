@@ -705,7 +705,6 @@ log(attacker)
                 stat = attacker.agility;
                 skill = attacker.fighting;
                 weaponRange = pageInfo.scale;
-                bonusDamage = attacker.meleebonus;
                 break;
             case "Ranged":
                 statName = "Coordination"; //for tooltip
@@ -713,7 +712,6 @@ log(attacker)
                 stat = attacker.coordination;
                 skill = attacker.fighting;
                 weaponRange = Ranges[weapon.range];
-                bonusDamage = attacker.rangedbonus;
                 break;
             case "Mental":
                 statName = "Will"; //for tooltip
@@ -721,7 +719,6 @@ log(attacker)
                 stat = attacker.will;
                 skill = attacker.academia;
                 weaponRange = "";
-                bonusDamage = attacker.spellbonus;
                 break;
         }    
 
@@ -777,6 +774,10 @@ log(attacker)
         outputCard.body.push("Difficulty: " + difficulty);
         outputCard.body.push("Target: " + defender.name);
         outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
+        if (complications > 0) {
+            let s = (complications > 1) ? "s": "";
+            outputCard.body.push(complications + " Complication" + s);
+        }
         if (successes < difficulty) {
             outputCard.body.push("Miss");
         } else {
@@ -784,17 +785,17 @@ log(attacker)
             if (bonusMomentum > 0) {
                 outputCard.body.push("Bonus Momentum: " + bonusMomentum);
             }
+
+            ButtonInfo("Roll Damage","!Damage;"+attackerID+";"+defenderID+";"+weaponName+";?{Momentum Spend|0};?{Salvo|No|Yes}");
+
         }
-        if (complications > 0) {
-            let s = (complications > 1) ? "s": "";
-            outputCard.body.push(complications + " Complication" + s);
-        }
+
 //highlight critical successes and complications
 //maybe graphic represenations for d20?
 //tooltip
 
 //melee has different resutls - do oppossed rol
-        //button for rolling damage
+        //button for rolling damage if success
 
 
         PrintCard();
@@ -804,17 +805,35 @@ log(attacker)
 
     }
 
-/*
-put damage function here
+    const Damage = (msg) => {
+        //msg to have weapon name, and ask for added bonus eg. momentum spend
+        let Tag = msg.content.split(";");
+        let attackerID = Tag[1];
+        let defenderID = Tag[2];
+        let weaponName = Tag[3];
+        let bonusDice = parseInt(Tag[4]) || 0;
+        let salvo = Tag[5];
+        salvo = (salvo === "Yes") ? true:false;
+        bonusDice = (bonusDice > 3) ? 3:bonusDice; 
+        let attacker = CharacterArray[attackerID];
+        let defender = CharacterArray[defenderID];
+        let weapon = Weapons[weaponName];
+        let bonusDamage;
+        switch(weapon.type) {
+            case "Melee":
+                bonusDamage = parseInt(attacker.meleebonus);
+                break;
+            case "Ranged":
+                bonusDamage = parseInt(attacker.rangedbonus);
+                break;
+            case "Mental":
+                bonusDamage = parseInt(attacker.spellbonus);
+                break;
+        }    
+log(bonusDamage)
 
-
-    if (successes >= difficulty) {
-        //Stress inflicted incl. any notes re effect
-
-//move this to be follow a button
-
+        let numDice = parseInt(weapon.stress) + bonusDamage + bonusDice;
         let stressRolls = [];
-        let numDice = parseInt(weapon.stress) + parseInt(bonusDamage);
         let nmbrStress = 0;
         let nmbrEffects = 0;
 
@@ -844,16 +863,51 @@ put damage function here
         }
         stressRolls.sort();
 
-        outputCard.body.push(stressRolls.toString());
+        //flag here is effects does anything - check weapon
+        effectsFlag = weapon.stresseffect ? true:false;
+
+        SetupCard(weaponName,"Damage Results","PCs");
+        outputCard.body.push("Rolls: " + stressRolls.toString()); //adjust to pics
         outputCard.body.push("Total Stress: " + nmbrStress);
-        if (nmbrEffects > 0) {
-            outputCard.body.push(nmbrEffects + " Effects");
+        if (nmbrEffects > 0 && effectsFlag === true) {
+            outputCard.body.push(nmbrEffects + " Effects Rolled");
+            //and info on the effect
+
+
+
+
+
+
+        }
+        if (salvo === true && weapon.salvo) {
+            switch(weapon.salvo) {
+                case "Vicious":
+                    if (nmbrEffects > 0) {
+                        outputCard.body.push("Salvo adds " + nmbrEffects + "  Stress");
+                        outputCard.body.push("For a Total of " + (nmbrStress + nmbrEffects) + " Stress");
+                    } else {
+                        outputCard.body.push("No Effect from Salvo");
+                    }
+                    break;
+
+            }            
+
+
+
+
+
+            outputCard.body.push("One Ammo is consumed");
         }
 
 
+        PrintCard();
 
     }
-*/
+    
+
+
+
+
 
 
 
@@ -923,6 +977,9 @@ put damage function here
             case '!Attack':
                 Attack(msg);
                 break;
+            case '!Damage':
+                Damage(msg);
+                break; 
             case '!TokenInfo':
                 TokenInfo(msg);
                 break;

@@ -793,10 +793,28 @@ log(attacker)
 //maybe graphic represenations for d20?
 //tooltip
 
+
+        //button for rolling damage
+
+
+        PrintCard();
+
+
+
+
+    }
+
+/*
+put damage function here
+
+
+    if (successes >= difficulty) {
         //Stress inflicted incl. any notes re effect
 
+//move this to be follow a button
+
         let stressRolls = [];
-        let numDice = weapon.stress + bonusDamage;
+        let numDice = parseInt(weapon.stress) + parseInt(bonusDamage);
         let nmbrStress = 0;
         let nmbrEffects = 0;
 
@@ -826,20 +844,19 @@ log(attacker)
         }
         stressRolls.sort();
 
-
-
-
-
-
-
-
-
-        PrintCard();
-
+        outputCard.body.push(stressRolls.toString());
+        outputCard.body.push("Total Stress: " + nmbrStress);
+        if (nmbrEffects > 0) {
+            outputCard.body.push(nmbrEffects + " Effects");
+        }
 
 
 
     }
+*/
+
+
+
 
 
     const TokenInfo = (msg) => {

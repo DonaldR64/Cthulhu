@@ -249,6 +249,9 @@ const AC = (() => {
             this.reason = parseInt(attributeArray.reason);
             this.will = parseInt(attributeArray.will);
             this.fighting = parseInt(attributeArray.skill_fighting);
+            this.handguns = (attributeArray.foc_handguns === "on") ? true:false;
+
+
 
         }
 
@@ -421,7 +424,7 @@ const AC = (() => {
     const Weapons = {
         "High Standard HDM Pistol": {
             type: "Ranged",
-            focus: "Handguns",
+            focus: "handguns",
             range: "Close",
             stress: "3",
             stresseffect: "",
@@ -662,7 +665,6 @@ const AC = (() => {
 
         let stat;
         let skill;
-        let focus;
         if (weapon.type === "Ranged") {
             stat = attacker.coordination;
             skill = attacker.fighting;
@@ -673,8 +675,9 @@ const AC = (() => {
 
         //attack
         //focus
-
-
+        let focus = attacker[weapon.focus]
+        log(focus)
+     
         let target = stat + skill;
 
         let diceNum = 2 + bonusDice;
@@ -704,6 +707,7 @@ const AC = (() => {
             attackRolls.push(roll);
             if (roll <= target) {successes += 1};
             if (roll === 1) {successes += 1};
+            if (roll > 1 && focus === true && roll <= skill) {successes += 1};
             if (roll === 20) {complications += 1};
         }
 

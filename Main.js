@@ -259,7 +259,7 @@ const AC = (() => {
             this.will = parseInt(attributeArray.will);
             //skills
             this.fighting = parseInt(attributeArray.skill_fighting) || 0;
-
+            this.academia = parseInt(attributeArray.skill_academia) || 0;
 
             //focuses
             this.hand =  (attributeArray.foc_hand_to_hand === "on") ? true:false;
@@ -271,6 +271,13 @@ const AC = (() => {
             this.exotic = (attributeArray.foc_exotic === "on") ? true:false;
             this.throwing = (attributeArray.foc_throwing === "on") ? true:false;
             this.occultism = (attributeArray.foc_occultism === "on") ? true:false;
+
+            //bonus damage
+            this.meleebonus = parseInt(attributeArray.brawn_bonus_dmg);
+            this.rangedbonus = parseInt(attributeArray.insight_bonus_dmg);
+            this.spellbonus = parseInt(attributeArray.will_bonus_dmg);
+
+
 
 
 
@@ -689,9 +696,7 @@ const AC = (() => {
         let weapon = Weapons[weaponName];
         if (!weapon) {return};
 
-        let stat;
-        let skill;
-        let weaponRange;
+        let stat,skill,weaponRange,bonusDamage;
 log(attacker)
         switch(weapon.type) {
             case "Melee":
@@ -700,24 +705,26 @@ log(attacker)
                 stat = attacker.agility;
                 skill = attacker.fighting;
                 weaponRange = pageInfo.scale;
+                bonusDamage = attacker.meleebonus;
                 break;
             case "Ranged":
-                log("Here")
                 statName = "Coordination"; //for tooltip
                 skillName = "Fighting";
                 stat = attacker.coordination;
                 skill = attacker.fighting;
                 weaponRange = Ranges[weapon.range];
+                bonusDamage = attacker.rangedbonus;
+                break;
             case "Mental":
                 statName = "Will"; //for tooltip
                 skillName = "Academia";
                 stat = attacker.will;
                 skill = attacker.academia;
                 weaponRange = "";
+                bonusDamage = attacker.spellbonus;
                 break;
         }    
-log(stat)
-log(skill)
+
         let focus = attacker[weapon.focus] || false;
         let focusTarget = (focus === true) ? skill:1;
 
@@ -784,14 +791,40 @@ log(skill)
         }
 //highlight critical successes and complications
 //maybe graphic represenations for d20?
+//tooltip
 
         //Stress inflicted incl. any notes re effect
 
         let stressRolls = [];
+        let numDice = weapon.stress + bonusDamage;
         let nmbrStress = 0;
         let nmbrEffects = 0;
 
-
+        for (let i=0;i<numDice;i++) {
+            roll = randomInteger(6);
+            stressRolls.push(roll);
+            switch(roll) {
+                case 1:
+                    nmbrStress += 1;
+                    break;
+                  case 2:
+                    nmbrStress += 2;
+                    break;
+                  case 3:
+                    break;
+                  case 4:
+                    break;
+                  case 5:
+                    nmbrStress += 1;
+                    nmbrEffects += 1;
+                    break;
+                  case 6:
+                    nmbrStress += 1;
+                    nmbrEffects += 1;
+                    break;
+            }
+        }
+        stressRolls.sort();
 
 
 

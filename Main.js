@@ -793,7 +793,7 @@ log(attacker)
 //maybe graphic represenations for d20?
 //tooltip
 
-
+//melee has different resutls - do oppossed rol
         //button for rolling damage
 
 

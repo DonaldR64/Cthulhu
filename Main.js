@@ -250,14 +250,27 @@ const AC = (() => {
             this.hex = hex;
             this.hexLabel = hexLabel;
             this.token = token;
+            //abilities
             this.brawn = parseInt(attributeArray.brawn);
             this.coordination = parseInt(attributeArray.coordination);
             this.agility = parseInt(attributeArray.agility);
             this.insight = parseInt(attributeArray.insight);
             this.reason = parseInt(attributeArray.reason);
             this.will = parseInt(attributeArray.will);
+            //skills
             this.fighting = parseInt(attributeArray.skill_fighting);
+
+
+            //focuses
+            this.hand =  (attributeArray.foc_hand_to_hand === "on") ? true:false;
+            this.close = (attributeArray.foc_close_quarters === "on") ? true:false;
+            this.melee = (attributeArray.foc_melee_weapons === "on") ? true:false;
             this.handguns = (attributeArray.foc_handguns === "on") ? true:false;
+            this.rifles = (attributeArray.foc_rifles === "on") ? true:false;
+            this.heavy = (attributeArray.foc_heavy_weapons === "on") ? true:false;
+            this.exotic = (attributeArray.foc_exotic === "on") ? true:false;
+            this.throwing = (attributeArray.foc_throwing === "on") ? true:false;
+            this.occultism = (attributeArray.foc_occultism === "on") ? true:false;
 
 
 
@@ -420,6 +433,7 @@ const AC = (() => {
 
 //set up as in feet
     const Ranges = {
+        Melee: 1,
         Close: 50,
         Medium: 100,
         Long: 200,
@@ -661,6 +675,7 @@ const AC = (() => {
         let defenderID = Tag[2];
         let weaponName = Tag[3]; 
         let bonusDice = parseInt(Tag[4]) || 0; //0 - 5?
+        let roll;
 
         let attacker = CharacterArray[attackerID];
         let defender = CharacterArray[defenderID];
@@ -676,18 +691,34 @@ const AC = (() => {
 
         let stat;
         let skill;
-        if (weapon.type === "Ranged") {
-            stat = attacker.coordination;
-            skill = attacker.fighting;
+        let weaponRange;
 
-        }
-        //Melee
-        //Mental
+        switch(weaponType) {
+            case "Melee":
+                statName = "Agility"; //for tooltip
+                skillName = "Fighting";
+                stat = attacker.agility;
+                skill = attacker.fighting;
+                weaponRange = pageInfo.scale;
+                break;
+            case "Ranged":
+                statName = "Coordination"; //for tooltip
+                skillName = "Fighting";
+                stat = attacker.coordination;
+                skill = attacker.fighting;
+                weaponRange = Ranges[weapon.range];
+            case "Mental":
+                statName = "Will"; //for tooltip
+                skillName = "Academia";
+                stat = attacker.will;
+                skill = attacker.academia;
+                weaponRange = "";
+                break;
+        }    
 
-        //attack
-        //focus
-        let focus = attacker[weapon.focus]
-     
+        let focus = attacker[weapon.focus] || false;
+        let focusTarget = (focus === true) ? skill:1;
+
         let target = stat + skill;
 
         let diceNum = 2 + bonusDice;
@@ -698,7 +729,6 @@ const AC = (() => {
 
         //change difficulty based on range
         let distance = TokenDistance(attacker,defender);
-        let weaponRange = Ranges[weapon.range];
         if (distance > weaponRange) {
             difficulty++;
             if (weapon.range === "Close") {
@@ -708,8 +738,6 @@ const AC = (() => {
                 if (distance > Ranges["Long"]) {difficulty++};
             }
         }
-//Melee Range???
-
 
         //prone
         if (defender.token.get(sm.prone) === true) {
@@ -723,19 +751,18 @@ const AC = (() => {
 
 
 
-
-
-
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);
             attackRolls.push(roll);
-            if (roll <= target) {successes += 1};
-            if (roll === 1) {successes += 1};
-            if (roll > 1 && focus === true && roll <= skill) {successes += 1};
-            if (roll === 20) {complications += 1};
+            if (roll === 20) {complications++};
+            if (roll <= target) {successes++};
+            if (roll <= focusTarget) {successes++};
         }
 
-        let bonusMomentum = successes - difficulty || 0;
+        attackRolls.sort();
+        
+        let bonusMomentum = successes - difficulty;
+        bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
 
         SetupCard(attacker.name,weaponName,"PCs");
         outputCard.body.push("Difficulty: " + difficulty);
@@ -755,6 +782,22 @@ const AC = (() => {
         }
 //highlight critical successes and complications
 //maybe graphic represenations for d20?
+
+        //Stress inflicted incl. any notes re effect
+
+        let stressRolls = [];
+        let nmbrStress = 0;
+        let nmbrEffects = 0;
+
+
+
+
+
+
+
+
+
+
 
         PrintCard();
 

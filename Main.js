@@ -872,7 +872,7 @@ const AC = (() => {
         stressRolls.sort();
 
 //? a way to combine these or maybe use a common routine ?
-
+//add piercing
 
         //flag here is effects does anything - check weapon
         effectsFlag = weapon.stresseffect ? true:false;

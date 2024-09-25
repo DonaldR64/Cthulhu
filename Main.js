@@ -689,16 +689,8 @@ const AC = (() => {
     }
 
     const Attack = (msg) => {
-        //msg will have character info, weapon name, ? target info
-        //also # of extra dice
-        //calculate difficulty -> base 1, +1 if prone, +1 if certain marker (spells?)
-        //roll against approp. stat
-        //note rolls, any extra momentum or complications
-        //roll damage 
-        //can calculate final results
-
         //add in tooltips
-
+        //fortune spend?
 
         let Tag = msg.content.split(";");
         let attackerID = Tag[1];
@@ -708,13 +700,14 @@ const AC = (() => {
         let roll;
         let difficulty = 1;
 
-
         let attacker = CharacterArray[attackerID];
         let defender = CharacterArray[defenderID];
         if (!attacker || !defender) {return};
+        SetupCard(attacker.name,weaponName,"PCs");
 
         if (attacker === defender) {
-            sendChat("","Targetted Self");
+            outputCard.body.push("Targetted Self");
+            PrintCard();
             return;
         }
 
@@ -798,10 +791,10 @@ const AC = (() => {
         if (attacker.token.get(SM.aim) === true) {
             aimFlag = true;
         }
-log(aimFlag)
         for (let i=0;i<diceNum;i++) {
-            let roll = randomInteger(20);
+            roll = randomInteger(20);
             if (roll > target && aimFlag === true) {
+                rerollFlag = true;
                 roll = randomInteger(20);
                 aimFlag = false;
             }
@@ -815,22 +808,21 @@ log(aimFlag)
         }
         attackRolls.sort();
 
+        let bonusMomentum = successes - difficulty;
+        bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
+
+
+        outputCard.body.push("Difficulty: " + difficulty);
+        outputCard.body.push("Target: " + defender.name);
+        outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
+//change this to a tooltip        
+        if (rerollFlag === true) {outputCard.body.push("Aim allowed a reroll")};
+
         if (weapon.qualities.includes("Reliable") && complications > 0) {
             complications = Math.max(0,complications - 1);
             outputCard.body.push("Reliable Prevented a Complication");
         }
 
-
-        let bonusMomentum = successes - difficulty;
-        bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
-
-
-
-
-        SetupCard(attacker.name,weaponName,"PCs");
-        outputCard.body.push("Difficulty: " + difficulty);
-        outputCard.body.push("Target: " + defender.name);
-        outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
         if (complications > 0) {
             let s = (complications > 1) ? "s": "";
             outputCard.body.push(complications + " Complication" + s);

@@ -250,7 +250,7 @@ const AC = (() => {
             this.hex = hex;
             this.hexLabel = hexLabel;
             this.token = token;
-            
+
             //abilities
             this.brawn = parseInt(attributeArray.brawn);
             this.coordination = parseInt(attributeArray.coordination);
@@ -730,6 +730,9 @@ const AC = (() => {
                 stat = attacker.coordination;
                 skill = attacker.fighting;
                 difficulty += rangeMod;
+                if (distance <= 5 && weapon.qualities.includes("Close Quarters") === false) {
+                    difficulty += 2;
+                }
                 break;
             case "Mental":
                 statName = "Will"; //for tooltip

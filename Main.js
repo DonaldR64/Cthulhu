@@ -793,39 +793,27 @@ const AC = (() => {
         if (weapon.qualities.includes("Indirect")) {
             difficulty++;
         }
-
-
+        let aimFlag = false;
+        let rerollFlag = false;
+        if (attacker.token.get(SM.aim) === true) {
+            aimFlag = true;
+        }
+log(aimFlag)
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);
+            if (roll > target && aimFlag === true) {
+                roll = randomInteger(20);
+                aimFlag = false;
+            }
             attackRolls.push(roll);
             if (roll === 20) {complications++};
+            if (roll === 19 && weapon.qualities.includes("Unreliable")) {
+                complications++;
+            }
             if (roll <= target) {successes++};
             if (roll <= focusTarget) {successes++};
         }
         attackRolls.sort();
-
-        if (attacker.token.get(SM.aim) === true) {
-            attacker.token.set(SM.aim,false); 
-            if (weapon.qualities.includes("Inaccurate") === false) {
-                //reroll lowest if a miss
-                let highRoll = attackRolls[0];
-log("High Roll: " + highRoll)
-                let newRoll;
-                if (highRoll > target) {
-                    if (highRoll === 20) {complications--};
-                    newRoll = randomInteger(20);
-                    if (highRoll === 20) {complications++};
-                    if (newRoll === 19 && weapon.qualities.includes("Unreliable")) {
-                        complications++;
-                    }
-                    if (newRoll <= target) {successes++};
-                    if (newRoll <= focusTarget) {successes++};
-                    attackRolls[0] = newRoll;
-    //replace this with tooltip ?
-                    outputCard.body.push("Aim allowed a reroll of " + highRoll);
-                }
-            }
-        }
 
         if (weapon.qualities.includes("Reliable") && complications > 0) {
             complications = Math.max(0,complications - 1);

@@ -831,7 +831,6 @@ const AC = (() => {
                 bonusDamage = parseInt(attacker.spellbonus);
                 break;
         }    
-log(bonusDamage)
 
         let numDice = parseInt(weapon.stress) + bonusDamage + bonusDice;
         let stressRolls = [];

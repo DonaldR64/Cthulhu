@@ -439,23 +439,19 @@ const AC = (() => {
     }
 
 //set up as in feet
-    const Ranges = {
-        Melee: 1,
-        Close: 50,
-        Medium: 100,
-        Long: 200,
-    }
-
-
-
+    const RangeBands = [
+        50, //Close
+        100, //Medium
+        200, //Long
+    ]
 
 //maybe move to seperate script ala Battlegroup
     const Weapons = {
         "High Standard HDM Pistol": {
             type: "Ranged",
             focus: "handguns",
-            range: "Close",
-            stress: "3",
+            range: 0, //close
+            stress: 3,
             stresseffect: "",
             salvo: "Vicious",
             size: "Minor",
@@ -683,6 +679,8 @@ const AC = (() => {
         let weaponName = Tag[3]; 
         let bonusDice = parseInt(Tag[4]) || 0; //0 - 5?
         let roll;
+        let difficulty = 1;
+
 
         let attacker = CharacterArray[attackerID];
         let defender = CharacterArray[defenderID];
@@ -696,29 +694,43 @@ const AC = (() => {
         let weapon = Weapons[weaponName];
         if (!weapon) {return};
 
-        let stat,skill,weaponRange,bonusDamage;
-log(attacker)
+        let distance = TokenDistance(attacker,defender);
+        let rangeBand = 3;
+        for (let i=0;i<RangeBands.length;i++) {
+            if (distance <= RangeBands[i]) {
+                rangeBand = i;
+                break;
+            }
+        }
+
+        rangeMod = Math.abs(rangeBand - weapon.range);
+
+        let stat,skill,weaponRange;
         switch(weapon.type) {
             case "Melee":
                 statName = "Agility"; //for tooltip
                 skillName = "Fighting";
                 stat = attacker.agility;
                 skill = attacker.fighting;
-                weaponRange = pageInfo.scale;
+                if (distance >pageInfo.scale) {
+                    sendChat("Not in Reach");
+                    return;
+                }
                 break;
             case "Ranged":
                 statName = "Coordination"; //for tooltip
                 skillName = "Fighting";
                 stat = attacker.coordination;
                 skill = attacker.fighting;
-                weaponRange = Ranges[weapon.range];
+                difficulty += rangeMod;
                 break;
             case "Mental":
                 statName = "Will"; //for tooltip
                 skillName = "Academia";
                 stat = attacker.will;
                 skill = attacker.academia;
-                weaponRange = "";
+                //ranges
+
                 break;
         }    
 
@@ -731,19 +743,6 @@ log(attacker)
         let attackRolls = [];
         let successes = 0;
         let complications = 0;
-        let difficulty = 1;
-
-        //change difficulty based on range
-        let distance = TokenDistance(attacker,defender);
-        if (distance > weaponRange) {
-            difficulty++;
-            if (weapon.range === "Close") {
-                if (distance > Ranges["Medium"]) {difficulty++};
-                if (distance > Ranges["Long"]) {difficulty++};
-            } else if (weapon.range === "Medium") {
-                if (distance > Ranges["Long"]) {difficulty++};
-            }
-        }
 
         //prone
         if (defender.token.get(SM.prone) === true) {
@@ -868,10 +867,18 @@ log(bonusDamage)
 
         SetupCard(weaponName,"Damage Results","PCs");
         outputCard.body.push("Rolls: " + stressRolls.toString()); //adjust to pics
-        outputCard.body.push("Total Stress: " + nmbrStress);
+        outputCard.body.push("Stress: " + nmbrStress);
         if (nmbrEffects > 0 && effectsFlag === true) {
             outputCard.body.push(nmbrEffects + " Effects Rolled");
             //and info on the effect
+            switch(weapon.stresseffect) {
+                case "Vicious":
+                    outputCard.body.push("Vicious adds " + nmbrEffects + "  Stress");
+                    outputCard.body.push("For a Total of " + (nmbrStress + nmbrEffects) + " Stress");
+                    break;
+
+            }  
+
 
 
 
@@ -880,6 +887,7 @@ log(bonusDamage)
 
         }
         if (salvo === true && weapon.salvo) {
+            outputCard.body.push("[hr]");
             switch(weapon.salvo) {
                 case "Vicious":
                     if (nmbrEffects > 0) {
@@ -898,6 +906,11 @@ log(bonusDamage)
 
             outputCard.body.push("One Ammo is consumed");
         }
+
+        //damage resistance
+        //less cover - for now leave this as a text note re cover
+
+
 
 
         PrintCard();

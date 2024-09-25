@@ -250,6 +250,7 @@ const AC = (() => {
             this.hex = hex;
             this.hexLabel = hexLabel;
             this.token = token;
+            
             //abilities
             this.brawn = parseInt(attributeArray.brawn);
             this.coordination = parseInt(attributeArray.coordination);
@@ -257,6 +258,7 @@ const AC = (() => {
             this.insight = parseInt(attributeArray.insight);
             this.reason = parseInt(attributeArray.reason);
             this.will = parseInt(attributeArray.will);
+
             //skills
             this.fighting = parseInt(attributeArray.skill_fighting) || 0;
             this.academia = parseInt(attributeArray.skill_academia) || 0;

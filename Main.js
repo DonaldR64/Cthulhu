@@ -260,6 +260,7 @@ const AC = (() => {
             //skills
             this.fighting = parseInt(attributeArray.skill_fighting) || 0;
             this.academia = parseInt(attributeArray.skill_academia) || 0;
+            this.resilience = parseInt(attributeArray.skill_resilience) || 0;
 
             //focuses
             this.hand =  (attributeArray.foc_hand_to_hand === "on") ? true:false;
@@ -453,7 +454,9 @@ const AC = (() => {
             range: 0, //close
             stress: 3,
             stresseffect: "",
+            stressX: 0,
             salvo: "Vicious",
+            salvoX: 0,
             size: "Minor",
             qualities: "Close Quarters, Hidden",
         }
@@ -863,6 +866,9 @@ const AC = (() => {
         }
         stressRolls.sort();
 
+//? a way to combine these or maybe use a common routine ?
+
+
         //flag here is effects does anything - check weapon
         effectsFlag = weapon.stresseffect ? true:false;
 
@@ -877,29 +883,79 @@ const AC = (() => {
                     outputCard.body.push("Vicious adds " + nmbrEffects + "  Stress");
                     outputCard.body.push("For a Total of " + (nmbrStress + nmbrEffects) + " Stress");
                     break;
-
-            }  
-
-
-
-
-
-
-
-        }
-        if (salvo === true && weapon.salvo) {
-            outputCard.body.push("[hr]");
-            switch(weapon.salvo) {
-                case "Vicious":
-                    if (nmbrEffects > 0) {
-                        outputCard.body.push("Salvo adds " + nmbrEffects + "  Stress");
-                        outputCard.body.push("For a Total of " + (nmbrStress + nmbrEffects) + " Stress");
+                case "Area":
+                    outputCard.body.push(nmbrEffects + " additional target(s) also take Damage");
+                    break;
+                case "Backlash":
+                    outputCard.body.push((nmbrEffects * weapon.stressX) + " Stress Damage affects the attacker due to Backlash");
+                    break;
+                case "Drain":
+                    outputCard.body.push("The Target also takes " + nmbrEffects + " Fatigue due to Drain");
+                    break;
+                case "Intense":
+                    outputCard.body.push("If this attack inflicts an injury, the target suffers an additional injury.");
+                    break;
+                case "Persistent":
+                    outputCard.body.push("For the next " + nmbrEffects + " rounds, the target suffers " + weapon.stressX + " Challenge Dice of Stress at the start of their turn");
+                    break;
+                case "Snare":
+                    outputCard.body.push("The target cannot take any other actions until they succeed at a skill test with a difficulty of " + nmbrEffects);
+                    break;
+                case "Stun":
+                    if (nmbrEffects >= defender.resilience) {
+                        outputCard.body.push("The target is Stunned and cannot act on their next turn");
                     } else {
-                        outputCard.body.push("No Effect from Salvo");
+                        outputCard.body.push("The target resists the Stun");
                     }
                     break;
+            }  
+        }
 
-            }            
+        if (salvo === true && weapon.salvo) {
+            outputCard.body.push("[hr]");
+            if (nmbrEffects > 0) {
+                switch(weapon.salvo) {
+                    case "Area":
+                        outputCard.body.push(nmbrEffects + " additional target(s) also take Damage");
+                        break;
+                    case "Drain":
+                        outputCard.body.push("The Target also takes " + nmbrEffects + " Fatigue due to Drain");
+                        break;
+                    case "Intense":
+                        outputCard.body.push("If this attack inflicts an injury, the target suffers an additional injury.");
+                        break;
+                    case "Persistent":
+                        outputCard.body.push("For the next " + nmbrEffects + " rounds, the target suffers " + weapon.stressX + " Challenge Dice of Stress at the start of their turn");
+                        break;
+                    case "Snare":
+                        outputCard.body.push("The target cannot take any other actions until they succeed at a skill test with a difficulty of " + nmbrEffects);
+                        break;
+                    case "Stun":
+                        if (nmbrEffects >= defender.resilience) {
+                            outputCard.body.push("The target is Stunned and cannot act on their next turn");
+                        } else {
+                            outputCard.body.push("The target resists the Stun");
+                        }
+                        break;
+                    case "Vicious":
+                        if (nmbrEffects > 0) {
+                            outputCard.body.push("Salvo adds " + nmbrEffects + "  Stress");
+                            outputCard.body.push("For a Total of " + (nmbrStress + nmbrEffects) + " Stress");
+                        } else {
+                            outputCard.body.push("No Effect from Salvo");
+                        }
+                        break;
+
+                }
+
+
+            }
+
+                
+
+
+
+
 
 
 

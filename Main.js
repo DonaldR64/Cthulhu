@@ -33,7 +33,7 @@ const AC = (() => {
 
     const SM = {
         prone: "status_Prone::2006547",
-
+        aim: "status_Target::2006531", //if has taken aim as minor action
 
 
     }
@@ -250,6 +250,12 @@ const AC = (() => {
             this.hex = hex;
             this.hexLabel = hexLabel;
             this.token = token;
+
+//see re below in sheets ??
+            this.specialabilities = ""; //for things like invulnerable etc 
+            this.scale = 0; //default for humans - alter for bigger things
+//
+
 
             //abilities
             this.brawn = parseInt(attributeArray.brawn);
@@ -769,7 +775,7 @@ const AC = (() => {
         let attackRolls = [];
         let successes = 0;
         let complications = 0;
-
+//add tooltips for below
         //prone
         if (defender.token.get(SM.prone) === true) {
             if (distance/pageInfo.scale > 1) {
@@ -781,6 +787,13 @@ const AC = (() => {
         //other mods to difficulty eg. spells
 
 
+        if (weapon.qualities.includes("Cumbersome") && defender.scale < 1) {
+            difficulty++;
+        }
+        if (weapon.qualities.includes("Indirect")) {
+            difficulty++;
+        }
+
 
         for (let i=0;i<diceNum;i++) {
             let roll = randomInteger(20);
@@ -789,11 +802,42 @@ const AC = (() => {
             if (roll <= target) {successes++};
             if (roll <= focusTarget) {successes++};
         }
-
         attackRolls.sort();
+
+        if (attacker.token.get(SM.aim) === true) {
+            attacker.token.set(SM.aim,false); 
+            if (weapon.qualities.includes("Inaccurate") === false) {
+                //reroll lowest if a miss
+                let highRoll = attackRolls[0];
+log("High Roll: " + highRoll)
+                let newRoll;
+                if (highRoll > target) {
+                    if (highRoll === 20) {complications--};
+                    newRoll = randomInteger(20);
+                    if (highRoll === 20) {complications++};
+                    if (newRoll === 19 && weapon.qualities.includes("Unreliable")) {
+                        complications++;
+                    }
+                    if (newRoll <= target) {successes++};
+                    if (newRoll <= focusTarget) {successes++};
+                    attackRolls[0] = newRoll;
+    //replace this with tooltip ?
+                    outputCard.body.push("Aim allowed a reroll of " + highRoll);
+                }
+            }
+        }
+
+        if (weapon.qualities.includes("Reliable") && complications > 0) {
+            complications = Math.max(0,complications - 1);
+            outputCard.body.push("Reliable Prevented a Complication");
+        }
+
 
         let bonusMomentum = successes - difficulty;
         bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
+
+
+
 
         SetupCard(attacker.name,weaponName,"PCs");
         outputCard.body.push("Difficulty: " + difficulty);
@@ -853,6 +897,7 @@ const AC = (() => {
         let defender = CharacterArray[defenderID];
         let weapon = Weapons[weaponName];
         let bonusDamage;
+//tooltip
         switch(weapon.type) {
             case "Melee":
                 bonusDamage = parseInt(attacker.meleebonus);
@@ -864,6 +909,12 @@ const AC = (() => {
                 bonusDamage = parseInt(attacker.spellbonus);
                 break;
         }    
+//tooltip
+        if (weapon.qualities.includes("Giant-Killer")) {
+            bonusDamage++;
+        }
+
+
 
         let numDice = parseInt(weapon.stress) + bonusDamage + bonusDice;
         let stressRolls = [];
@@ -911,6 +962,32 @@ const AC = (() => {
             });
         }
 
+        if (nmbrStress > 0) {
+            if (weapon.qualities.includes("Accurate")) {
+                outputCard.body.push("If you take the AIM minor action before an attack with this weapon, it gains the INTENSE effect.");
+            }
+            if (weapon.qualities.includes("Bane") && defender.specialabilities.includes("Invulnerable")) {
+                outputCard.body.push("Ignores INVULNERABLE and prevents the spending of threat via TOUGH to ignore injury.");
+            }
+            if (weapon.qualities.includes("Debilitating")) {
+                outputCard.body.push("Treating injuries caused by this weapon have +1 difficulty to the skill test.");
+            }
+            if (weapon.qualities.includes("Hunger")) {
+                outputCard.body.push("If this inflicts an injury choose: recover 5 stress, heal 1 injury or gain +1 challenge die worth of power for the rest of the scene.");
+            }
+
+
+        } else {
+
+
+
+
+        }
+
+
+
+
+
         if (salvoChoice !== "" && salvoChoice !== "No") {
             outputCard.body.push("[hr]");
             outputCard.body.push("Salvo consumes 1 Ammo");
@@ -924,6 +1001,7 @@ const AC = (() => {
                 outputCard.body.push("To no added effect");
             }
         }
+
 
         //damage resistance
         //less cover - for now leave this as a text note re cover

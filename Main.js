@@ -461,6 +461,22 @@ const AC = (() => {
             salvoX: 0,
             size: "Minor",
             qualities: "Close Quarters, Hidden",
+            vfx: "",
+            sfx: "",
+        },
+        "Flamethrower": {
+            type: "Ranged",
+            focus: "heavy",
+            range: 0, //close
+            stress: 5,
+            stresseffect: "Persistent",
+            stressX: 4,
+            salvo: "Area",
+            salvoX: 0,
+            size: "Major",
+            qualities: "Escalation,Debilitating",
+            vfx: "",
+            sfx: "",
         }
 
 
@@ -815,6 +831,7 @@ const AC = (() => {
 //melee has different resutls - do oppossed rol
         //button for rolling damage if success
 
+//sound and visual effects from weapon
 
         PrintCard();
 
@@ -887,18 +904,18 @@ const AC = (() => {
         if (nmbrEffects > 0 && weapon.stresseffect !== "") {
             outputCard.body.push(nmbrEffects + " Effects Rolled");
             //and info on the effect
-            effResults = DamageEffects(weapon.stresseffect,nmbrEffects,nmbrStress,defender);
+            effResults = DamageEffects(weapon.stresseffect,nmbrEffects,weapon.stressX,nmbrStress,defender);
             nmbrStress = effResults.totalStress;
             _.each(effResults.text,text => {
                 outputCard.body.push(text);
             });
         }
 
-        if (salvoChoice !== "" || salvoChoice !== "No") {
+        if (salvoChoice !== "" && salvoChoice !== "No") {
             outputCard.body.push("[hr]");
             outputCard.body.push("Salvo consumes 1 Ammo");
             if (nmbrEffects > 0) {
-                effResults = DamageEffects(salvoChoice,nmbrEffects,nmbrStress,defender);
+                effResults = DamageEffects(salvoChoice,nmbrEffects,weapon.salvoX,nmbrStress,defender);
                 nmbrStress = effResults.totalStress;
                 _.each(effResults.text,text => {
                     outputCard.body.push(text);
@@ -960,8 +977,7 @@ const AC = (() => {
             case "Piercing":
                 results.text.push("This attack ignores " + (X * number) + " resistance.");
                 break;
-            
-
+        }
         return results;
     }
 

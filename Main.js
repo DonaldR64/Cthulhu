@@ -702,8 +702,10 @@ const AC = (() => {
                 break;
             }
         }
+        let delta = rangeBand - weapon.range
 
-        rangeMod = Math.abs(rangeBand - weapon.range);
+        //rangeMod = Math.abs(delta); //Rules as written
+        rangeMod = (delta > 0) ? delta:0; //no effect if closer 
 
         let stat,skill,weaponRange;
         switch(weapon.type) {

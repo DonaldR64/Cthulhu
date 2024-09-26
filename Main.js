@@ -884,9 +884,6 @@ const AC = (() => {
 
         PrintCard();
 
-
-
-
     }
 
     const Damage = (msg) => {

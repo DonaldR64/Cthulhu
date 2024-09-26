@@ -816,8 +816,8 @@ const AC = (() => {
         outputCard.body.push("Target: " + defender.name);
         outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
 
-        let dis = DisplayDice(1,"D20",24);
-
+        let dis = DisplayDice(1,"Green20",24);
+        outputCard.body.push(dis);
 
 //change this to a tooltip        
 

@@ -768,6 +768,13 @@ const AC = (() => {
         let attackRolls = [];
         let successes = 0;
         let complications = 0;
+        let complicationRange = 20;
+        if (weapon.qualities.includes("Unreliable")) {
+            complicationRange = 19;
+        }
+
+
+
 //add tooltips for below
         //prone
         if (defender.token.get(SM.prone) === true) {
@@ -791,6 +798,9 @@ const AC = (() => {
         if (attacker.token.get(SM.aim) === true) {
             aimFlag = true;
         }
+
+        let dis = "";
+
         for (let i=0;i<diceNum;i++) {
             roll = randomInteger(20);
             if (roll > target && aimFlag === true) {
@@ -799,14 +809,23 @@ const AC = (() => {
                 aimFlag = false;
             }
             attackRolls.push(roll);
-            if (roll === 20) {complications++};
-            if (roll === 19 && weapon.qualities.includes("Unreliable")) {
-                complications++;
+            if (roll >= complicationRange) {
+                complications++
+                dis += DisplayDice(20,"Red20",24);
+            };
+            if (roll <= target && roll > focusTarget) {
+                dis += DisplayDice(roll,"White20",24);
+                successes += 1;
+            };
+            if (roll <= focusTarget) {
+                successes += 2
+                dis += DisplayDice(roll,"Green20",24);
+            };
+            if (roll > target && roll < complicationRange) {
+                dis += DisplayDice(roll,"White20",24);
             }
-            if (roll <= target) {successes++};
-            if (roll <= focusTarget) {successes++};
+            dis += " ";
         }
-        attackRolls.sort();
 
         let bonusMomentum = successes - difficulty;
         bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
@@ -814,9 +833,8 @@ const AC = (() => {
 
         outputCard.body.push("Difficulty: " + difficulty);
         outputCard.body.push("Target: " + defender.name);
-        outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
-
-        let dis = DisplayDice(1,"Green20",24);
+//outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
+//use above for tooltip
         outputCard.body.push(dis);
 
 //change this to a tooltip        
@@ -936,7 +954,7 @@ const AC = (() => {
         stressRolls.sort();
         let stressText = "";
         _.each(stressRolls,roll => {
-            stressText += DisplayDice(roll,"Stress-Dice",24) + " ";
+            stressText += DisplayDice(roll,"Stress-Dice",28) + " ";
         });
 
 

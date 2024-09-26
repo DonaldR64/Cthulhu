@@ -803,7 +803,7 @@ const AC = (() => {
 
         for (let i=0;i<diceNum;i++) {
             roll = randomInteger(20);
-            if (roll > target && aimFlag === true) {
+            if (roll > target && roll < complicationRange && aimFlag === true) {
                 rerollFlag = true;
                 roll = randomInteger(20);
                 aimFlag = false;
@@ -870,7 +870,7 @@ const AC = (() => {
                 })
                 salvoChoice += "}"
             }
-            ButtonInfo("Roll Damage","!Damage;"+attackerID+";"+defenderID+";"+weaponName+";?{Momentum Spend|0}" + salvoChoice);
+            ButtonInfo("Roll Damage","!Damage;"+attackerID+";"+defenderID+";"+weaponName+";?{Momentum Spend|0|1|2|3}" + salvoChoice);
         }
 
 

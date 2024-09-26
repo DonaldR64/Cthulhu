@@ -975,8 +975,8 @@ const AC = (() => {
         }
 
         if (nmbrStress > 0) {
-            if (weapon.qualities.includes("Accurate")) {
-                outputCard.body.push("If you take the AIM minor action before an attack with this weapon, it gains the INTENSE effect.");
+            if (weapon.qualities.includes("Accurate") && attacker.token.get(SM.aim) === true) {
+                outputCard.body.push("If this attack inflicts an injury, the target suffers an additional injury.");
             }
             if (weapon.qualities.includes("Bane") && defender.specialabilities.includes("Invulnerable")) {
                 outputCard.body.push("Ignores INVULNERABLE and prevents the spending of threat via TOUGH to ignore injury.");

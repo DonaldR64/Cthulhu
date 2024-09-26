@@ -454,7 +454,6 @@ const AC = (() => {
         200, //Long
     ]
 
-//maybe move to seperate script ala Battlegroup
     const Weapons = {
         "High Standard HDM Pistol": {
             type: "Ranged",

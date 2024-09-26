@@ -815,7 +815,15 @@ const AC = (() => {
         outputCard.body.push("Difficulty: " + difficulty);
         outputCard.body.push("Target: " + defender.name);
         outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
+
+        let dis = DisplayDice(1,"D20",24);
+
+
 //change this to a tooltip        
+
+
+
+
         if (rerollFlag === true) {outputCard.body.push("Aim allowed a reroll")};
 
         if (weapon.qualities.includes("Reliable") && complications > 0) {

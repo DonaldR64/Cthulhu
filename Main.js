@@ -706,7 +706,7 @@ const AC = (() => {
         SetupCard(attacker.name,weaponName,"PCs");
 
         if (attacker === defender) {
-            outputCard.body.push("Targetted Self");
+            outputCard.body.push("Targeting Self");
             PrintCard();
             return;
         }

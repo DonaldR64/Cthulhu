@@ -574,7 +574,7 @@ const AC = (() => {
     const DisplayDice = (roll,tablename,size) => {
         roll = roll.toString();
         if (!tablename) {
-            tablename = "Neutral";
+            tablename = "D6";
         }
         let table = findObjs({type:'rollabletable', name: tablename})[0];
         let obj = findObjs({type:'tableitem', _rollabletableid: table.id, name: roll })[0];        
@@ -926,9 +926,15 @@ const AC = (() => {
             }
         }
         stressRolls.sort();
+        let stressText = "";
+        _.each(stressRolls,roll => {
+            stressText += DisplayDice(roll,"Stress-Dice",24) + " ";
+        });
+
+
 
         SetupCard(weaponName,"Damage Results","PCs");
-        outputCard.body.push("Rolls: " + stressRolls.toString()); //adjust to pics
+        outputCard.body.push("Rolls: " + stressText); //adjust to pics
         outputCard.body.push("Stress: " + nmbrStress);
 
         let effResults;

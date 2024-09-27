@@ -689,7 +689,6 @@ const AC = (() => {
 
     const Attack = (msg) => {
         //add in tooltips
-        //fortune spend?
 
         let Tag = msg.content.split(";");
         let attackerID = Tag[1];
@@ -873,8 +872,6 @@ const AC = (() => {
         }
 
 
-//highlight critical successes and complications
-//maybe graphic represenations for d20?
 //tooltip
 
 //melee has different resutls - do oppossed rol

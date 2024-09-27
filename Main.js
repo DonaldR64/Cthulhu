@@ -835,7 +835,9 @@ const AC = (() => {
             roll = randomInteger(20);
             if (roll > target && roll < complicationRange && aimFlag === true) {
                 rerollFlag = true;
+                attackTips += "<br>Aim rerolled a " + roll;
                 roll = randomInteger(20);
+                attackTips += " to a " + roll;
                 aimFlag = false;
             }
             attackRolls.push(roll);
@@ -936,11 +938,12 @@ const AC = (() => {
                 bonusDamage = parseInt(attacker.spellbonus) || 0;
                 break;
         }    
-        let damTips = "+" + bonusDamage + "Dice from Stats";
+
+        let damTips = "+" + bonusDamage + " Dice from Stats";
 
         if (weapon.qualities.includes("Giant-Killer") && defender.scale > 0) {
             bonusDamage += defender.scale;
-            damTips = "+" + defender.scale + " Dice from Giant-Killer";
+            damTips += "<br>+" + defender.scale + " Dice from Giant-Killer";
         }
 
         let numDice = parseInt(weapon.stress) + bonusDamage + bonusDice;
@@ -1032,16 +1035,15 @@ const AC = (() => {
 
         nmbrStress = Math.max(0,(nmbrStress - defense));
 
-        attackTips = '[🎲](#" class="showtip" title="' + damTips + ')';
+        damTips = '[🎲](#" class="showtip" title="' + damTips + ')';
 
-
-        outputCard.body.push("[#ff0000]Total Stress: " + nmbrStress + "[/#]");
+        outputCard.body.push(damTips + "  [#ff0000]Total Stress: " + nmbrStress + "[/#]");
 
         if (nmbrStress > 0 && defense > 0) {
             outputCard.body.push("Defense reduced the Stress by " + defense);
         }
 
-        if (nmbrStress > 0 && weaponType !== "Mental") {
+        if (nmbrStress > 0 && weapon.type !== "Mental") {
             outputCard.body.push("If any cover, reduce stress further");
         }
 

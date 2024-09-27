@@ -688,8 +688,6 @@ const AC = (() => {
     }
 
     const Attack = (msg) => {
-        //add in tooltips
-
         let Tag = msg.content.split(";");
         let attackerID = Tag[1];
         let defenderID = Tag[2];

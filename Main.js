@@ -447,7 +447,6 @@ const AC = (() => {
 
     }
 
-//set up as in feet
     const RangeBands = [
         50, //Close
         100, //Medium
@@ -909,19 +908,18 @@ const AC = (() => {
     }
 
     const Damage = (msg) => {
-        //msg to have weapon name, and ask for added bonus eg. momentum spend
         let Tag = msg.content.split(";");
         let attackerID = Tag[1];
         let defenderID = Tag[2];
         let weaponName = Tag[3];
         let bonusDice = parseInt(Tag[4]) || 0;
         let salvoChoice = Tag[5];
+
         bonusDice = (bonusDice > 3) ? 3:bonusDice; 
         let attacker = CharacterArray[attackerID];
         let defender = CharacterArray[defenderID];
         let weapon = Weapons[weaponName];
         let bonusDamage;
-//tooltip
         switch(weapon.type) {
             case "Melee":
                 bonusDamage = parseInt(attacker.meleebonus);
@@ -933,12 +931,12 @@ const AC = (() => {
                 bonusDamage = parseInt(attacker.spellbonus);
                 break;
         }    
-//tooltip
-        if (weapon.qualities.includes("Giant-Killer")) {
-            bonusDamage++;
+        let damTips = "+" + bonusDamage + "Dice from Stats";
+
+        if (weapon.qualities.includes("Giant-Killer") && defender.scale > 0) {
+            bonusDamage += defender.scale;
+            damTips = "+" + defender.scale + " Dice from Giant-Killer";
         }
-
-
 
         let numDice = parseInt(weapon.stress) + bonusDamage + bonusDice;
         let stressRolls = [];
@@ -975,14 +973,12 @@ const AC = (() => {
             stressText += DisplayDice(roll,"Stress-Dice",28) + " ";
         });
 
-
-
         SetupCard(weaponName,"Damage Results","PCs");
         outputCard.body.push("Rolls: " + stressText); 
-        outputCard.body.push("Stress: " + nmbrStress);
 
         let effResults;
         if (nmbrEffects > 0 && weapon.stresseffect !== "") {
+            outputCard.body.push("[hr]");
             outputCard.body.push(nmbrEffects + " Effects Rolled");
             effResults = DamageEffects(weapon.stresseffect,nmbrEffects,weapon.stressX,nmbrStress,defender);
             nmbrStress = effResults.totalStress;
@@ -1008,10 +1004,6 @@ const AC = (() => {
 
         } 
 
-
-
-
-
         if (salvoChoice !== "" && salvoChoice !== "No") {
             outputCard.body.push("[hr]");
             outputCard.body.push("Salvo consumes 1 Ammo");
@@ -1026,6 +1018,7 @@ const AC = (() => {
             }
         }
 
+        outputCard.body.push("[hr]");
         let defense = defender.armour
         let defenseName = "Armour";
 //suppressing fire
@@ -1034,15 +1027,21 @@ const AC = (() => {
             defenseName = "Courage";
         }
 
+        nmbrStress = Math.max(0,(nmbrStress - defense));
+
+        attackTips = '[🎲](#" class="showtip" title="' + damTips + ')';
+
+
+        outputCard.body.push("[#ff0000]Total Stress: " + nmbrStress + "[/#]");
+
         if (nmbrStress > 0 && defense > 0) {
-            nmbrStress = Math.max(0,(nmbrStress - defense));
-            outputCard.body.push("[hr]");
-            outputCard.body.push(defenseName + " reduces the Stress to " + nmbrStress);
+            outputCard.body.push(defenseName + " reduced the Stress by " + defense);
         }
 
         if (nmbrStress > 0 && defenseName === "Armour") {
             outputCard.body.push("If any cover, reduce stress further");
         }
+
 
         PrintCard();
 

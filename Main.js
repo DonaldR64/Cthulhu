@@ -482,9 +482,22 @@ const AC = (() => {
             qualities: "Escalation,Debilitating",
             vfx: "",
             sfx: "",
-        }
+        },
 
-
+        "Geweher 41": {
+            type: "Ranged",
+            focus: "rifle",
+            range: 1, //close
+            stress: 5,
+            stresseffect: "",
+            stressX: 0,
+            salvo: "Vicious",
+            salvoX: 0,
+            size: "Major",
+            qualities: "Reliable",
+            vfx: "",
+            sfx: "",
+        },
 
 
 

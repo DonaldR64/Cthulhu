@@ -880,7 +880,7 @@ const AC = (() => {
 //sound and visual effects from weapon
 
         PrintCard();
-
+        attacker.token.set(SM.aim,false);
     }
 
     const Damage = (msg) => {
@@ -1114,6 +1114,24 @@ const AC = (() => {
         return dist;
     }
 
+    const Aim = (msg) => {
+        let Tag = msg.content.split(";");
+        let attackerID = Tag[1];
+        let attacker = CharacterArray[attackerID];
+        attacker.token.set(SM.aim,true);
+        SetupCard(attacker.name,"Take Aim","PC");
+        PrintCard();
+    }
+
+    const HitTheDirt = (msg) => {
+        let Tag = msg.content.split(";");
+        let attackerID = Tag[1];
+        let attacker = CharacterArray[attackerID];
+        attacker.token.set(SM.prone,true);
+        SetupCard(attacker.name,"Hit the Dirt!","PC");
+        PrintCard();
+    }
+
 
 
 
@@ -1148,6 +1166,15 @@ const AC = (() => {
             case '!Distance':
                 Distance(msg);
                 break;
+            case '!Aim':
+                Aim(msg);
+                break;
+            case '!HitTheDirt':
+                HitTheDirt(msg);
+                break;
+
+
+
         }
     };
 

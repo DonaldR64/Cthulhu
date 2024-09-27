@@ -712,6 +712,8 @@ const AC = (() => {
         let weapon = Weapons[weaponName];
         if (!weapon) {return};
 
+        let attackTips = "";
+
         let distance = TokenDistance(attacker,defender);
         let rangeBand = 3;
         for (let i=0;i<RangeBands.length;i++) {
@@ -724,14 +726,41 @@ const AC = (() => {
 
         //rangeMod = Math.abs(delta); //Rules as written
         rangeMod = (delta > 0) ? delta:0; //no effect if closer 
+        if (rangeMod > 0) {
+            attackTips += "+" + rangeMod + " Difficulty due to Range";
+        }
 
-        let stat,skill,weaponRange;
+        //prone
+        if (defender.token.get(SM.prone) === true) {
+            if (distance/pageInfo.scale > 1) {
+                difficulty++;
+                attackTips += "+1 Difficulty - Prone"
+            } else {
+                difficulty--;
+                attackTips += "-1 Difficulty - Prone/Reach";
+            }
+        }
+        //other mods to difficulty eg. spells
+
+
+
+        if (weapon.qualities.includes("Cumbersome") && defender.scale < 1) {
+            difficulty++;
+            attackTips += "+1 Difficulty - Cumbersome";
+        }
+        if (weapon.qualities.includes("Indirect")) {
+            difficulty++;
+            attackTips += "+1 Difficulty - Indirect";
+        }
+
+
+        let stat,skill;
         switch(weapon.type) {
             case "Melee":
                 statName = "Agility"; //for tooltip
                 skillName = "Fighting";
                 stat = attacker.agility;
-                skill = attacker.fighting;
+                skill = attacker.fighting; 
                 if (distance >pageInfo.scale) {
                     sendChat("Not in Reach");
                     return;
@@ -757,7 +786,14 @@ const AC = (() => {
                 break;
         }    
 
+        attackTips += "<br>" + statName + " " + stat + " / " + skillName + " " + skill;
+
         let focus = attacker[weapon.focus] || false;
+        if (focus === true) {
+            attackTips += "<br>Focus Applies";
+        }
+
+
         let focusTarget = (focus === true) ? skill:1;
 
         let target = stat + skill;
@@ -772,25 +808,6 @@ const AC = (() => {
         }
 
 
-
-//add tooltips for below
-        //prone
-        if (defender.token.get(SM.prone) === true) {
-            if (distance/pageInfo.scale > 1) {
-                difficulty++;
-            } else {
-                difficulty--;
-            }
-        }
-        //other mods to difficulty eg. spells
-
-
-        if (weapon.qualities.includes("Cumbersome") && defender.scale < 1) {
-            difficulty++;
-        }
-        if (weapon.qualities.includes("Indirect")) {
-            difficulty++;
-        }
         let aimFlag = false;
         let rerollFlag = false;
         if (attacker.token.get(SM.aim) === true) {
@@ -829,16 +846,10 @@ const AC = (() => {
         bonusMomentum = bonusMomentum < 0 ? 0:bonusMomentum
 
 
-        outputCard.body.push("Difficulty: " + difficulty);
+        outputCard.body.push("Difficulty: " + difficulty + " Needing: " + target);
         outputCard.body.push("Target: " + defender.name);
-//outputCard.body.push("Rolls: " + attackRolls.toString() + " vs. " + target + "+");
-//use above for tooltip
+
         outputCard.body.push(dis);
-
-//change this to a tooltip        
-
-
-
 
         if (rerollFlag === true) {outputCard.body.push("Aim allowed a reroll")};
 
@@ -851,12 +862,15 @@ const AC = (() => {
             let s = (complications > 1) ? "s": "";
             outputCard.body.push(complications + " Complication" + s);
         }
+        outputCard.body.push("[hr]");
+        attackTips = '[🎲](#" class="showtip" title="' + attackTips + ')';
+
         if (successes < difficulty) {
-            outputCard.body.push("Miss");
+            outputCard.body.push(attackTips + "  Miss");
         } else {
-            outputCard.body.push("Hit");
+            outputCard.body.push(attackTips +"  [#ff0000]Hit[/#]");
             if (bonusMomentum > 0) {
-                outputCard.body.push("Bonus Momentum: " + bonusMomentum);
+                outputCard.body.push("[#ff0000]Bonus Momentum: " + bonusMomentum + "[/#]");
             }
             //build bit for salvo choices if any
             let salvoChoice = "";
@@ -953,13 +967,12 @@ const AC = (() => {
 
 
         SetupCard(weaponName,"Damage Results","PCs");
-        outputCard.body.push("Rolls: " + stressText); //adjust to pics
+        outputCard.body.push("Rolls: " + stressText); 
         outputCard.body.push("Stress: " + nmbrStress);
 
         let effResults;
         if (nmbrEffects > 0 && weapon.stresseffect !== "") {
             outputCard.body.push(nmbrEffects + " Effects Rolled");
-            //and info on the effect
             effResults = DamageEffects(weapon.stresseffect,nmbrEffects,weapon.stressX,nmbrStress,defender);
             nmbrStress = effResults.totalStress;
             _.each(effResults.text,text => {
@@ -982,12 +995,7 @@ const AC = (() => {
             }
 
 
-        } else {
-
-
-
-
-        }
+        } 
 
 
 
@@ -1007,12 +1015,23 @@ const AC = (() => {
             }
         }
 
+        let defense = defender.armour
+        let defenseName = "Armour";
+//suppressing fire
+        if (weapon.type === "Mental") {
+            defense = defender.courage
+            defenseName = "Courage";
+        }
 
-        //damage resistance
-        //less cover - for now leave this as a text note re cover
+        if (nmbrStress > 0 && defense > 0) {
+            nmbrStress = Math.max(0,(nmbrStress - defense));
+            outputCard.body.push("[hr]");
+            outputCard.body.push(defenseName + " reduces the Stress to " + nmbrStress);
+        }
 
-
-
+        if (nmbrStress > 0 && defenseName === "Armour") {
+            outputCard.body.push("If any cover, reduce stress further");
+        }
 
         PrintCard();
 

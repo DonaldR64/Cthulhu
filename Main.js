@@ -256,6 +256,11 @@ const AC = (() => {
             this.scale = 0; //default for humans - alter for bigger things
 //
 
+            this.armour = parseInt(attributeArray.armour);
+            this.courage = parseInt(attributeArray.courage);
+
+
+
 
             //abilities
             this.brawn = parseInt(attributeArray.brawn);
@@ -922,13 +927,13 @@ const AC = (() => {
         let bonusDamage;
         switch(weapon.type) {
             case "Melee":
-                bonusDamage = parseInt(attacker.meleebonus);
+                bonusDamage = parseInt(attacker.meleebonus) || 0;
                 break;
             case "Ranged":
-                bonusDamage = parseInt(attacker.rangedbonus);
+                bonusDamage = parseInt(attacker.rangedbonus) || 0;
                 break;
             case "Mental":
-                bonusDamage = parseInt(attacker.spellbonus);
+                bonusDamage = parseInt(attacker.spellbonus) || 0;
                 break;
         }    
         let damTips = "+" + bonusDamage + "Dice from Stats";
@@ -1020,11 +1025,9 @@ const AC = (() => {
 
         outputCard.body.push("[hr]");
         let defense = defender.armour
-        let defenseName = "Armour";
 //suppressing fire
         if (weapon.type === "Mental") {
             defense = defender.courage
-            defenseName = "Courage";
         }
 
         nmbrStress = Math.max(0,(nmbrStress - defense));
@@ -1035,10 +1038,10 @@ const AC = (() => {
         outputCard.body.push("[#ff0000]Total Stress: " + nmbrStress + "[/#]");
 
         if (nmbrStress > 0 && defense > 0) {
-            outputCard.body.push(defenseName + " reduced the Stress by " + defense);
+            outputCard.body.push("Defense reduced the Stress by " + defense);
         }
 
-        if (nmbrStress > 0 && defenseName === "Armour") {
+        if (nmbrStress > 0 && weaponType !== "Mental") {
             outputCard.body.push("If any cover, reduce stress further");
         }
 

@@ -454,8 +454,8 @@ const AC = (() => {
 
     const RangeBands = [
         50, //Close
-        100, //Medium
-        200, //Long
+        150, //Medium
+        300, //Long
     ]
 
     const Weapons = {

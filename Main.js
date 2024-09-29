@@ -245,7 +245,7 @@ const AC = (() => {
             let hex = pointToHex(location);
             let hexLabel = hex.label();
             this.name = token.get("name");
-            this.charid = char.id;
+            this.charID = char.id;
             this.faction = attributeArray.faction || "PC";
             this.location = location;
             this.hex = hex;
@@ -259,9 +259,6 @@ const AC = (() => {
 
             this.armour = parseInt(attributeArray.armour);
             this.courage = parseInt(attributeArray.courage);
-
-
-
 
             //abilities
             this.brawn = parseInt(attributeArray.brawn);
@@ -291,6 +288,22 @@ const AC = (() => {
             this.meleebonus = parseInt(attributeArray.brawn_bonus_dmg);
             this.rangedbonus = parseInt(attributeArray.insight_bonus_dmg);
             this.spellbonus = parseInt(attributeArray.will_bonus_dmg);
+
+
+            //weapons
+            let aaKeys = Object.keys(attributeArray)
+            let weaponKeys = aaKeys.filter((obj) => {
+                return obj.startsWith(`repeating_weapons_`) && obj.endsWith('_weapons_name');
+            })
+            let rowIDs = [];
+            _.each(weaponKeys,key => {
+                let id;
+                id = key.replace(`repeating_weapons_`,"");
+                id = id.replace('_weapons_name',"");
+                rowIDs.push(id);
+            })
+            this.weaponRowIDs = rowIDs;
+log(this.weaponRowIDs)
 
 
 
@@ -561,7 +574,7 @@ const AC = (() => {
     }
 
     const AttributeArray = (characterID) => {
-        let aa = {}
+        let aa = {};
         let attributes = findObjs({_type:'attribute',_characterid: characterID});
         for (let j=0;j<attributes.length;j++) {
             let name = attributes[j].get("name")
@@ -836,7 +849,7 @@ const AC = (() => {
 
         let aimFlag = false;
         let rerollFlag = false;
-        if (attacker.token.get(SM.aim) === true) {
+        if (attacker.token.get(SM.aim) === true && weapon.qualities.includes("Inaccurate") === false) {
             aimFlag = true;
         }
 
@@ -1111,6 +1124,50 @@ const AC = (() => {
 
 
 
+    const AddAbility = (abilityName,action,charID) => {
+        createObj("ability", {
+            name: abilityName,
+            characterid: charID,
+            action: action,
+            istokenaction: true,
+        })
+    }    
+
+
+    const AddAbilities = (msg) => {
+        let Tag = msg.content.split(";");
+        let tokenID = Tag[1];
+        let character = CharacterArray[tokenID];
+
+log(character.name)
+log(character.charID)
+log(character.weaponRowIDs.length)
+
+        for (let i=0;i<character.weaponRowIDs.length;i++) {
+            let attrname = "repeating_weapons_" + character.weaponRowIDs[i] + "_weapons_name";
+log(attrname)
+            let weaponObj = findObjs({type:'attribute',characterid: character.charID, name: attrname})[0];
+            let weaponName = weaponObj.get("current");
+log(weaponName)
+            let weapon = Weapons[weaponName] || "Nil";
+
+            if (weapon === "Nil") {continue};
+
+            //create macro
+            let abilityName,action;
+            abilityName = weaponName;
+            action = "!Attack;@{selected|token_id};@{target|token_id};" + weaponName + ";?{Bonus Dice|0}"
+
+            AddAbility(abilityName,action,character.charID);
+        }
+
+
+
+
+
+    }
+
+
 
 
 
@@ -1131,10 +1188,31 @@ const AC = (() => {
             sendChat("","Not in Array Yet");
             return;
         };
+
+        let weaponNames = [];
+
+        for (let i=0;i<character.weaponRowIDs.length;i++) {
+            let attrname = "repeating_weapons_" + character.weaponRowIDs[i] + "_weapons_name";
+            let weapon = findObjs({type:'attribute',characterid: character.charID, name: attrname})[0];
+            let weaponName = weapon.get("current");
+            weaponNames.push(weaponName);
+        }
+
+        
+ 
+
+    
+        
         SetupCard(character.name,"Info",character.faction);
         outputCard.body.push("Hex: " + character.hexLabel);
+        outputCard.body.push(weaponNames.toString());
+
         PrintCard();
     }
+
+
+
+
 
 
     const Distance = (msg) => {
@@ -1148,7 +1226,6 @@ const AC = (() => {
         
 
         sendChat("","Distance: " + TokenDistance(attacker,defender) + " " + pageInfo.scaleUnits);
-
 
 
     }
@@ -1217,7 +1294,9 @@ const AC = (() => {
             case '!HitTheDirt':
                 HitTheDirt(msg);
                 break;
-
+            case '!AddAbilities':
+                AddAbilities(msg);
+                break;
 
 
         }

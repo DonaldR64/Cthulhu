@@ -245,6 +245,7 @@ const AC = (() => {
             let hex = pointToHex(location);
             let hexLabel = hex.label();
             this.name = token.get("name");
+            this.charid = char.id;
             this.faction = attributeArray.faction || "PC";
             this.location = location;
             this.hex = hex;
@@ -303,6 +304,16 @@ const AC = (() => {
 
 
     }
+
+    const CheckInjuryStatus = (character) => {
+        let char = getObj("character",character.token.get("represents"));
+        let I1 = Attribute(char,"injury_1") === "" ? 0:1;
+        let I2 = Attribute(char,"injury_2") === "" ? 0:1;
+        let I3 = Attribute(char,"injury_3") === "" ? 0:1;
+        let injuries = I1+I2+I3;
+        return injuries;
+    }
+
 
 
 
@@ -821,7 +832,7 @@ const AC = (() => {
         if (weapon.qualities.includes("Unreliable")) {
             complicationRange = 19;
         }
-
+        complicationRange -= CheckInjuryStatus(attacker);
 
         let aimFlag = false;
         let rerollFlag = false;
